@@ -27,6 +27,7 @@ interface AuthContextType {
   token: string | null;
   isAuthOpen: boolean;
   activeTab: 'login' | 'register';
+  isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
@@ -50,6 +51,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [token, setToken] = useState<string | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -61,13 +63,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       apiClient.getCurrentUser()
         .then((userData) => {
           setUser(userData);
+          setIsLoading(false);
         })
         .catch(() => {
           // Token might be invalid, clear it
           localStorage.removeItem('auth_token');
           setToken(null);
           apiClient.clearToken();
+          setIsLoading(false);
         });
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
@@ -120,6 +126,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     token,
     isAuthOpen,
     activeTab,
+    isLoading,
     login,
     register,
     logout,
