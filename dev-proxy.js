@@ -8,11 +8,14 @@ const app = express();
 const VITE = 'http://127.0.0.1:5173';
 const API  = 'http://127.0.0.1:8000';
 
-// پروکسی API
+// پروکسی API - حذف /api از مسیر
 app.use('/api', createProxyMiddleware({
   target: API,
   changeOrigin: true,
   xfwd: true,
+  pathRewrite: {
+    '^/api': '', // حذف /api از ابتدای مسیر
+  },
 }));
 
 // پروکسی Vite (هم HTTP هم WebSocket برای HMR)

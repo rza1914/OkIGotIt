@@ -73,12 +73,12 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
-app.include_router(banners.router, prefix="/api/v1/banners", tags=["banners"])
-app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
+app.include_router(auth.router, prefix="/v1/auth", tags=["authentication"])
+app.include_router(banners.router, prefix="/v1/banners", tags=["banners"])
+app.include_router(products.router, prefix="/v1/products", tags=["products"])
 
 # Health check endpoint
-@app.get("/api/v1/health")
+@app.get("/v1/health")
 async def health_check():
     return {"ok": True}
 
