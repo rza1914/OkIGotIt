@@ -14,7 +14,10 @@ const Header: React.FC = () => {
   const handleCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log('Cart click prevented, calling openCart()');
     openCart();
+    // Force check after click
+    setTimeout(() => console.log('Cart should be open now'), 100);
   };
   
 
