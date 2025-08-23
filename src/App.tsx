@@ -1,31 +1,28 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Admin from './pages/Admin';
-import Dashboard from './pages/Dashboard';
+import { Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Home from "./pages/Home";
+import Products from "./pages/Products";
+import Blog from "./pages/Blog";
+import Admin from "./pages/Admin";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
 import RequireAuth from './routes/RequireAuth';
-import { AuthProvider } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext';
-import AuthModal from './components/auth/AuthModal';
-import CartDrawer from './components/cart/CartDrawer';
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <div className="min-h-screen bg-white">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route element={<RequireAuth />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-            </Route>
-          </Routes>
-          <AuthModal />
-          <CartDrawer />
-        </div>
-      </CartProvider>
-    </AuthProvider>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="products" element={<Products />} />
+        <Route path="blog" element={<Blog />} />
+        <Route element={<RequireAuth />}>
+          <Route path="dashboard" element={<Dashboard />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Route>
+      {/* Admin outside layout for clean interface */}
+      <Route path="admin" element={<Admin />} />
+    </Routes>
   );
 }
 

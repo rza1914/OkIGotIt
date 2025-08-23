@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, User } from 'lucide-react';
-import { getPersianDate } from '../lib/date';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { digitsFa } from '../lib/fmt';
@@ -9,7 +8,6 @@ import UserMenu from './UserMenu';
 import SearchBar from './search/SearchBar';
 
 const Header: React.FC = () => {
-  const todayDate = getPersianDate();
   const { user, openAuthModal } = useAuth();
   const { openCart, totalItems } = useCart();
 

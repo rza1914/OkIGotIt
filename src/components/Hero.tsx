@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiClient, Banner } from '../lib/api';
 import { formatPrice } from '../lib/date';
 
@@ -54,9 +55,9 @@ const Hero: React.FC = () => {
               </span>{' '}
               هستی تحویل بگیری
             </p>
-            <button className="btn-primary text-lg px-8 py-4">
+            <Link to="/products" className="btn-primary text-lg px-8 py-4 inline-block">
               مشاهده محصولات
-            </button>
+            </Link>
           </div>
 
           {/* Hero Banner */}
