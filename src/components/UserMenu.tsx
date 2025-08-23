@@ -56,7 +56,11 @@ const UserMenu: React.FC = () => {
           <div className="p-2">
             <Link
               to="/dashboard"
-              onClick={() => setIsOpen(false)}
+              data-allow-nav
+              onClick={(e) => {
+                console.log('Dashboard link clicked!');
+                setIsOpen(false);
+              }}
               className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100/50 rounded-lg transition-colors"
             >
               <User size={18} />
