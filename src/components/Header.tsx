@@ -10,6 +10,12 @@ import SearchBar from './search/SearchBar';
 const Header: React.FC = () => {
   const { user, openAuthModal } = useAuth();
   const { openCart, totalItems } = useCart();
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openCart();
+  };
   
 
   return (
@@ -60,7 +66,8 @@ const Header: React.FC = () => {
             
             {/* Cart Button */}
             <button 
-              onClick={openCart}
+              onClick={handleCartClick}
+              type="button"
               className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors"
               aria-label="سبد خرید"
             >
