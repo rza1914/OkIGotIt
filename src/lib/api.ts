@@ -1,4 +1,4 @@
-import { getConfig } from './runtimeConfig';
+import { AppCfg, loadRuntimeConfig } from './runtimeConfig';
 
 export interface Banner {
   id: number;
@@ -52,13 +52,29 @@ export interface User {
   username: string;
 }
 
+let cfg = { API_BASE: '/api/v1' };
+export function setRuntimeCfg(c: { API_BASE: string }) { cfg = c; }
+
+type FetchOpts = RequestInit & { auth?: boolean };
+export async function api<T>(path: string, opts: FetchOpts = {}): Promise<T> {
+  const url = `${cfg.API_BASE}${path}`;
+  const headers: Record<string,string> = { 'Content-Type': 'application/json' };
+  if (opts.auth) {
+    const t = localStorage.getItem('auth_token');
+    if (t) headers.Authorization = `Bearer ${t}`;
+  }
+  const res = await fetch(url, { ...opts, headers: { ...headers, ...(opts.headers||{}) } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
 class ApiClient {
   private baseUrl = '';
   private token: string | null = null;
 
   async init() {
     if (!this.baseUrl) {
-      const config = await getConfig();
+      const config = await loadRuntimeConfig();
       this.baseUrl = config.API_BASE;
     }
   }
@@ -80,55 +96,59 @@ class ApiClient {
     localStorage.removeItem('auth_token');
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     await this.init();
-    
-    const url = `${this.baseUrl}${endpoint}`;
-    const token = this.getToken();
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers as Record<string, string>,
     };
 
+    const token = this.getToken();
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
+    const config: RequestInit = {
       ...options,
-      headers,
-    });
+      headers: {
+        ...headers,
+        ...options?.headers,
+      },
+    };
 
+    const response = await fetch(`${this.baseUrl}${endpoint}`, config);
+    
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      if (response.status === 401) {
+        this.clearToken();
+        throw new Error('Authentication required');
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     return response.json();
   }
 
-  // Auth
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const formData = new FormData();
-    formData.append('username', credentials.identifier);
-    formData.append('password', credentials.password);
-
-    await this.init();
-    const response = await fetch(`${this.baseUrl}/auth/login`, {
+  // Auth endpoints
+  async login(data: LoginRequest): Promise<LoginResponse> {
+    const response = await fetch(`${cfg.API_BASE}/auth/login`, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        username: data.identifier,
+        password: data.password,
+      }),
     });
 
     if (!response.ok) {
       throw new Error('Invalid credentials');
     }
 
-    const data = await response.json();
-    this.setToken(data.access_token);
-    return data;
+    const result = await response.json();
+    this.setToken(result.access_token);
+    return result;
   }
 
   async register(data: RegisterRequest): Promise<LoginResponse> {
@@ -176,7 +196,6 @@ class ApiClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    // If it's FormData, don't set Content-Type header (let browser set it)
     const requestOptions: RequestInit = {
       method: 'POST',
       headers: data instanceof FormData ? headers : { ...headers, 'Content-Type': 'application/json' },

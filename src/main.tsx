@@ -1,10 +1,11 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+import { loadRuntimeConfig } from './lib/runtimeConfig';
+import { setRuntimeCfg } from './lib/api';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+loadRuntimeConfig().then(cfg => {
+  setRuntimeCfg(cfg);
+  ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+});
