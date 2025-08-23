@@ -76,10 +76,7 @@ const CartDrawer: React.FC = () => {
       aria-modal="true"
       aria-labelledby="cart-title"
       onKeyDown={handleKeyDown}
-      // پیشگیری از حباب کلیک به والدهای زیرین
-      onClickCapture={(e) => e.stopPropagation()}
-      onMouseDownCapture={(e) => e.stopPropagation()}
-      onTouchStartCapture={(e) => e.stopPropagation()}
+      // Remove these - they were preventing overlay clicks
     >
       {/* Overlay */}
       <div
@@ -92,10 +89,7 @@ const CartDrawer: React.FC = () => {
       <div className="fixed inset-y-0 right-0 w-full max-w-md sm:max-w-lg">
         <div 
           className="h-full bg-white/60 backdrop-blur-xl border-l border-black/10 shadow-2xl rounded-l-2xl flex flex-col"
-          // جلوگیری از عبور کلیک داخل پنل
           onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
         >
           
           {/* Header */}
