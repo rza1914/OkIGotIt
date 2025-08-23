@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ShoppingBag, User } from 'lucide-react';
 import { getPersianDate } from '../lib/date';
 
@@ -16,9 +17,13 @@ const Header: React.FC = () => {
 
           {/* Logo */}
           <div className="flex-1 flex justify-center">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-amber-500 bg-clip-text text-transparent">
-              آی‌شاپ
-            </h1>
+            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <img 
+                src="/logo-iShop.png" 
+                alt="آی‌شاپ" 
+                className="h-12 w-12 object-contain"
+              />
+            </Link>
           </div>
 
           {/* Cart and User Icons */}
