@@ -93,14 +93,38 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # Serve built frontend assets
 if os.path.isdir("dist"):
     app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
-    # Optional: other root files (manifest, icons)
-    app.mount("/_app", StaticFiles(directory="dist"), name="dist_root")
+
+# Serve app-config.json specifically
+@app.get("/app-config.json")
+async def get_app_config():
+    config_path = os.path.join("dist", "app-config.json")
+    if os.path.exists(config_path):
+        return FileResponse(config_path)
+    return {"API_BASE": "/api/v1"}
+
+# Serve other root static files from dist
+@app.get("/logo-iShop.png")
+async def get_logo():
+    logo_path = os.path.join("dist", "logo-iShop.png")
+    if os.path.exists(logo_path):
+        return FileResponse(logo_path)
+    raise HTTPException(status_code=404, detail="Logo not found")
+
+@app.get("/hero-banner-iShop.png")
+async def get_hero_banner():
+    banner_path = os.path.join("dist", "hero-banner-iShop.png")
+    if os.path.exists(banner_path):
+        return FileResponse(banner_path)
+    raise HTTPException(status_code=404, detail="Banner not found")
 
 # SPA fallback: everything not /api or /uploads -> index.html
 @app.get("/{full_path:path}")
 async def spa(full_path: str):
-    # Don't intercept API routes or uploads
-    if full_path.startswith("api/") or full_path.startswith("uploads/"):
+    # Don't intercept API routes, uploads, or specific static files
+    if (full_path.startswith("api/") or 
+        full_path.startswith("uploads/") or
+        full_path.startswith("assets/") or
+        full_path in ["app-config.json", "logo-iShop.png", "hero-banner-iShop.png"]):
         raise HTTPException(status_code=404, detail="Not found")
     
     index_path = os.path.join("dist", "index.html")
