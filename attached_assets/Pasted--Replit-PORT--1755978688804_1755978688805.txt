@@ -1,0 +1,152 @@
+این خطا معمولاً یعنی Replit داره یه دامین خالی رو باز می‌کنه چون **هیچ سرویسی روی `$PORT` گوش نمی‌ده** یا پروسه‌ها کرش/خاموش شدن. چون گفتی به `vite.config.ts` دست نمی‌زنیم، دو مسیر مطمئن داری—یکی «نجات فوری و ساده» (تک‌پورت، بدون HMR) و یکی «سه‌پروسه با پروکسی» (HMR کامل). اولی خیلی پایدارتره و مشکل دامین خالی رو همین الآن حل می‌کنه.
+
+---
+
+## گزینه A) ساده و پایدار (تک‌پورت Dev): FastAPI همه‌چیز رو سرو کنه + Vite فقط بیلد واچ
+
+* فقط **یک** پروسه روی `$PORT` بالا میاد (Uvicorn). Replit لینک درست می‌ده و «سرورها خاموش» هم نمی‌بینی.
+* HMR نداری، اما `vite build --watch` اتومات بیلد رو به‌روز می‌کنه.
+
+### 1) FastAPI را طوری تنظیم کن که `dist` را سرو کند
+
+`app/main.py` (چک‌لیست مهم‌ها: `/api`، استاتیک‌ها، SPA fallback، health):
+
+```py
+import os
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Dev: اگر لازم شد CORS را باز بگذار، در Prod محدود کن
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/v1/health")
+def health():
+    return {"ok": True}
+
+# --- این بخش برای فرانت بیلدشده ---
+# assets باندل‌شده
+app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
+# اگر مانيفست/آیکون دارید:
+app.mount("/_app", StaticFiles(directory="dist"), name="dist_root")
+
+# SPA fallback: هر چیزی غیر از /api → index.html
+@app.get("/{full_path:path}")
+def spa(full_path: str):
+    return FileResponse(os.path.join("dist", "index.html"))
+```
+
+### 2) اسکریپت‌ها را اصلاح کن
+
+* Vite فقط بیلد می‌گیرد و **واچ** می‌کند.
+* Uvicorn تنها سرویسی است که روی **`0.0.0.0:$PORT`** گوش می‌دهد.
+
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "concurrently -k \"vite build --watch\" \"uvicorn app.main:app --host 0.0.0.0 --port $PORT\"",
+    "build": "vite build",
+    "preview": "vite preview --host --port $PORT"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
+```
+
+> نکته‌ها:
+>
+> * **Run** در Replit را بگذار روی: `npm run dev`
+> * در فرانت اگر از `/app-config.json` استفاده می‌کنی، مقدار `API_BASE` را در **Prod/Dev تک‌پورت** بگذار `"/api/v1"` تا همه‌چیز از همان دامنه بیاید (بدون CORS).
+> * اگر الان فقط HTML ساده داشتی که از `http://localhost:8000` می‌زد، حتماً تغییر بده به **`/api/v1`** (نسبی).
+
+### 3) تست سریع
+
+* ترمینال Replit:
+
+  * `npm run dev`
+  * توی لاگ باید ببینی:
+
+    * `vite v... building for production... (watching)`
+    * `Uvicorn running on http://0.0.0.0:$PORT`
+* لینک Replit را باز کن → باید مستقیم **فرانت بیلد شده** را ببینی و API هم روی همان دامنه کار کند.
+* Health check: به `.../api/v1/health` برو، `{"ok":true}` بگیری.
+
+---
+
+## گزینه B) سه پروسه + پروکسی (HMR کامل) — اگر حتماً HMR می‌خوای
+
+اگر HMR می‌خوای و باز هم نمی‌خوای به `vite.config.ts` دست بزنی، پروکسی Dev بساز که روی `$PORT` گوش بده و ترافیک را بده به Vite (روی 127.0.0.1:5173) و API (روی 127.0.0.1:8000). این‌طوری Replit فقط پروکسی را می‌بیند و **دامنه خالی** تمام می‌شود.
+
+1. `dev-proxy.js`:
+
+```js
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+const PORT = process.env.PORT || 8080;
+const app = express();
+const VITE = 'http://127.0.0.1:5173';
+const API  = 'http://127.0.0.1:8000';
+
+app.use('/api', createProxyMiddleware({ target: API, changeOrigin: true, xfwd: true }));
+
+const viteProxy = createProxyMiddleware({
+  target: VITE, changeOrigin: true, ws: true, xfwd: true,
+  onProxyReq(proxyReq) { proxyReq.setHeader('Host', '127.0.0.1:5173'); },
+});
+
+app.use('/', viteProxy);
+
+const server = app.listen(PORT, '0.0.0.0', () =>
+  console.log(`Dev proxy on http://0.0.0.0:${PORT}`)
+);
+server.on('upgrade', viteProxy.upgrade);
+```
+
+2. Scripts:
+
+```json
+{
+  "scripts": {
+    "dev": "concurrently -k \"uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload\" \"vite --host 127.0.0.1 --port 5173\" \"node dev-proxy.js\"",
+    "build": "vite build",
+    "preview": "vite preview --host --port $PORT"
+  }
+}
+```
+
+3. در فرانت `API_BASE` را **نسبی** کن (`/api/v1`) تا از همین پروکسی رد شود.
+
+> Run = `npm run dev`
+> در لاگ باید هر سه خط «running» را ببینی: uvicorn، vite (127.0.0.1:5173)، dev-proxy (0.0.0.0:\$PORT).
+> اگر لینک Replit باز شد و هنوز چیزی نیست، یعنی پروکسی بالا نیامده یا روی `$PORT` گوش نمی‌دهد.
+
+---
+
+## چک‌لیست عیب‌یابی فوری (هر گزینه‌ای را انتخاب کردی)
+
+1. **حتماً روی `$PORT` گوش بده**: تنها پورتی که Replit اکسپوز می‌کند `$PORT` است.
+
+   * گزینه A: Uvicorn باید روی `0.0.0.0:$PORT` باشد.
+   * گزینه B: dev-proxy باید روی `0.0.0.0:$PORT` باشد.
+2. **لاگ‌ها را ببین**: باید پیام «listening/running» هر سرویس را ببینی. اگر یکی نیست، همون سرویس کرش کرده.
+3. **Health endpoint**: یک مسیر مثل `/api/v1/health` بگذار؛ اگر 200 نمی‌دهد، بک خاموش است یا رو مسیر دیگری گوش می‌دهد.
+4. **`app-config.json`**: در Dev تک‌پورت، `API_BASE="/api/v1"`. اگر هنوز `http://localhost:8000` داری، روی Replit fail می‌شود.
+5. **حالت Deploy vs Run**: فعلاً از **Run tab** استفاده کن (نه Deployment). اگر Deploy می‌کنی، entry باید یک سرویسی باشد که روی `$PORT` گوش بدهد (در گزینه A همان Uvicorn).
+6. **AllowedHosts / Vite**: اگر گزینه B را رفتی و هنوز خطای allowedHosts می‌بینی، یعنی مرورگر مستقیم به Vite وصل شده—باید فقط از طریق **پروکسی** به Vite برسی (Replit لینک باید به پروکسی باشد).
+
+---
+
+اگر می‌خوای همین الان سریع بالا بیاد، **گزینه A** (تک‌پورت با FastAPI + `vite build --watch`) مطمئن‌ترینه. بعد که خیالت راحت شد، اگر HMR لازم داشتی می‌ریم سراغ گزینه B.
+لاگ Run رو اگر بفرستی، دقیقاً می‌گم کدوم بخش بالا نمیاد.
