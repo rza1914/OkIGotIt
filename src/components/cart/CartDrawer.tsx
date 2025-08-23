@@ -13,17 +13,20 @@ const CartDrawer: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
 
-  // Lock body scroll when drawer is open
-  useLockBodyScroll(state.isOpen);
+  // Lock body scroll when drawer is open - temporarily disabled
+  // useLockBodyScroll(state.isOpen);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
+    console.log('Overlay clicked, closing cart');
     if (e.target === e.currentTarget) {
       closeCart();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    console.log('Cart drawer key pressed:', e.key);
     if (e.key === 'Escape') {
+      console.log('Escape pressed, closing cart');
       closeCart();
     }
   };
