@@ -5,6 +5,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# CORS middleware first
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_methods=["*"], 
+    allow_headers=["*"],
+)
+
 @app.get("/api/v1/health")
 def health():
     return {"ok": True}
@@ -98,16 +106,6 @@ def get_products():
         }
     ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_methods=["*"], 
-    allow_headers=["*"],
-)
-
-# Serve SPA at root so /app-config.json and assets work
+# Serve SPA at root - MUST BE LAST after all API routes
 if os.path.isdir("dist"):
     app.mount("/", StaticFiles(directory="dist", html=True), name="spa")
-
-# ⚠️ Remove any manual catch-all (@app.get("/{path:path}")) you had before.
-# The StaticFiles(html=True) already returns index.html for SPA routes.

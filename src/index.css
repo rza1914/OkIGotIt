@@ -2,53 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --- Base Layer --- */
 @layer base {
-  html {
-    font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+  /* به جای * {direction:rtl} فقط روی html اعمال کن */
+  html[dir="rtl"] { direction: rtl; }
+  body { direction: inherit; }
+
+  /* باکس سایزینگ جهانی */
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif; }
+  body { @apply bg-white text-gray-900 antialiased; }
+
+  /* انتخاب متن */
+  ::selection { background: #fde68a; color: #111827; }
+
+  /* اسکرول‌بار */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #fb7185, #fbbf24);
+    border-radius: 3px;
   }
 
-  * {
-    direction: rtl;
-  }
-
-  body {
-    @apply bg-white text-gray-900;
+  /* فوکوس قابل‌مشاهده برای دسترس‌پذیری */
+  :focus-visible {
+    outline: 2px solid #b76e79; /* rose */
+    outline-offset: 2px;
   }
 }
 
+/* --- Components Layer --- */
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-rose-400 to-amber-400 hover:from-rose-500 hover:to-amber-500 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-rose-400 to-amber-400 hover:from-rose-500 hover:to-amber-500
+           text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300
+           shadow-lg hover:shadow-xl active:scale-95;
   }
 
   .btn-secondary {
-    @apply border-2 border-rose-300 text-rose-600 hover:bg-rose-50 font-semibold px-6 py-3 rounded-xl transition-all duration-300;
+    @apply border-2 border-rose-300 text-rose-600 hover:bg-rose-50 font-semibold
+           px-6 py-3 rounded-xl transition-all duration-300;
   }
 
   .card {
-    @apply bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden;
+    @apply bg-white rounded-2xl shadow-elev hover:shadow-xl transition-all duration-300 overflow-hidden;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all duration-300;
+    @apply w-full px-4 py-3 border border-gray-300 rounded-xl
+           focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent
+           transition-all duration-300;
+  }
+
+  /* سایدبار شیشه‌ای (cart/search modals) */
+  .glass {
+    background: rgba(255,255,255,.6);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(0,0,0,.06);
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #fb7185, #fbbf24);
-  border-radius: 3px;
-}
-
-/* RTL specific adjustments */
-.rtl-grid {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
+/* --- Utilities / Overrides --- */
+.rtl-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }

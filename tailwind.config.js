@@ -1,18 +1,14 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./public/**/*.html",
+    "./src/**/*.{ts,tsx,js,jsx}"
   ],
-  corePlugins: {
-    preflight: true,
-  },
   theme: {
     extend: {
-      fontFamily: {
-        'vazir': ['Vazirmatn', 'system-ui', '-apple-system', 'sans-serif'],
-      },
       colors: {
+        gold: "#d4af37",
         rose: {
           50: '#fff1f2',
           100: '#ffe4e6',
@@ -36,23 +32,21 @@ export default {
           700: '#b45309',
           800: '#92400e',
           900: '#78350f',
-        }
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
         },
-        slideUp: {
-          '0%': { transform: 'translateY(10px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
+        khaki: "#8b6f47",
+      },
+      boxShadow: {
+        'elev': '0 10px 25px rgba(0,0,0,.08)',
       }
     },
   },
+  safelist: [
+    // کلاس‌هایی که ممکنه داینامیک ساخته شن و purge حذفشون کنه
+    'bg-gradient-to-r','from-rose-400','to-amber-400',
+    'hover:from-rose-500','hover:to-amber-500',
+    'rounded-xl','shadow-lg','hover:shadow-xl',
+    'focus:ring-2','focus:ring-rose-400'
+  ],
+  darkMode: ['class'],
   plugins: [],
-}
+};
