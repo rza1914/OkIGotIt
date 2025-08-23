@@ -57,8 +57,19 @@ const Header: React.FC = () => {
           {/* Left Side: User Menu + Cart */}
           <div className="flex items-center space-x-reverse space-x-4">
             
-            {/* Cart Button */}
-            <HeaderCartButton />
+            {/* Cart Button - TEMPORARY DEBUG */}
+            <button
+              type="button"
+              style={{ background: 'red', color: 'white', padding: '8px' }}
+              onClick={(e) => {
+                console.log('DEBUG: Direct cart click');
+                e.preventDefault();
+                e.stopPropagation();
+                alert('Cart clicked - should not navigate!');
+              }}
+            >
+              🛒 TEST
+            </button>
             
             {/* User Menu / Login Button */}
             {user ? (
