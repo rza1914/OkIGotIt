@@ -127,6 +127,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   const closeCart = () => {
     console.log('closeCart called, dispatching CLOSE_CART');
+    console.trace('Stack trace for closeCart call:');
     dispatch({ type: 'CLOSE_CART' });
   };
   
