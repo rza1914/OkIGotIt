@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 import { apiClient, Banner } from '../lib/api';
 import { formatPrice } from '../lib/date';
@@ -83,11 +84,9 @@ const BannerGrid: React.FC = () => {
                 </div>
               </div>
 
-              {banner.link_url && (
-                <a
-                  href={banner.link_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {banner.link_url && banner.link_url !== '#' && (
+                <Link
+                  to="/products"
                   className="absolute inset-0"
                   aria-label={banner.title || 'لینک محصول'}
                 />

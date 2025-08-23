@@ -22,8 +22,8 @@ const Footer: React.FC = () => {
             <h4 className="text-lg font-semibold mb-4">دسترسی سریع</h4>
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">صفحه اصلی</Link></li>
-              <li><span className="text-gray-400">محصولات</span></li>
-              <li><span className="text-gray-400">مجله</span></li>
+              <li><Link to="/products" className="text-gray-400 hover:text-white transition-colors">محصولات</Link></li>
+              <li><Link to="/blog" className="text-gray-400 hover:text-white transition-colors">مجله</Link></li>
               <li><span className="text-gray-400">درباره ما</span></li>
               <li><span className="text-gray-400">تماس با ما</span></li>
             </ul>
