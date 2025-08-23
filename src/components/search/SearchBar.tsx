@@ -109,35 +109,17 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectProduct }) => {
       onSelectProduct(result);
     } else {
       // Default behavior: navigate to product page
-      window.location.href = `/product/${result.id}`;
+      console.log('SearchBar would navigate to:', `/product/${result.id}`);
+      // Temporarily disabled: window.location.href = `/product/${result.id}`;
     }
   };
 
-  // Handle outside clicks
+  // Handle outside clicks - TEMPORARILY DISABLED FOR DEBUGGING
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      
-      // Don't close if clicking on cart button or other controls
-      if (
-        target.closest('[aria-label="سبد خرید"]') ||
-        target.closest('[role="button"]') ||
-        target.closest('button')
-      ) {
-        return;
-      }
-      
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowResults(false);
-      }
-    };
-
-    if (showResults) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
+    console.log('SearchBar useEffect: showResults changed to', showResults);
+    // Completely disabled to test if this is causing cart redirect
     return () => {};
-  }, []);
+  }, [showResults]);
 
   // Global keyboard shortcut (/ or Ctrl+K)
   useEffect(() => {
