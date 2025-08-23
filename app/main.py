@@ -1,7 +1,8 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from app.routers import auth
 from app.database import engine
 from app.models import Base
@@ -114,6 +115,19 @@ def get_products():
             "image_url": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400"
         }
     ]
+
+# Custom SPA handler for client-side routing
+@app.exception_handler(404)
+async def spa_handler(request: Request, exc):
+    # If path starts with /api, return proper 404
+    if request.url.path.startswith("/api"):
+        return {"detail": "Not Found"}
+    
+    # For all other paths, serve index.html for SPA routing
+    if os.path.exists("dist/index.html"):
+        return FileResponse("dist/index.html")
+    
+    return {"detail": "Not Found"}
 
 # Serve SPA at root - MUST BE LAST after all API routes
 if os.path.isdir("dist"):
