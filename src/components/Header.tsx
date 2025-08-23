@@ -26,9 +26,12 @@ const Header: React.FC = () => {
               />
             </Link>
             
-            {/* SearchBar next to logo */}
-            <div className="hidden sm:block">
+            {/* SearchBar next to logo - TEMPORARILY DISABLED */}
+            {/* <div className="hidden sm:block">
               <SearchBar />
+            </div> */}
+            <div className="hidden sm:block bg-yellow-200 p-2">
+              SEARCH DISABLED
             </div>
           </div>
 
@@ -71,8 +74,8 @@ const Header: React.FC = () => {
               🛒 TEST
             </button>
             
-            {/* User Menu / Login Button */}
-            {user ? (
+            {/* User Menu / Login Button - TEMPORARILY DISABLED */}
+            {/* {user ? (
               <UserMenu />
             ) : (
               <button 
@@ -82,7 +85,8 @@ const Header: React.FC = () => {
                 <User size={20} />
                 <span className="text-sm font-medium">ورود/ثبت‌نام</span>
               </button>
-            )}
+            )} */}
+            <div>USER MENU DISABLED</div>
           </div>
         </div>
 
