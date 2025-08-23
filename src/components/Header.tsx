@@ -68,11 +68,18 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-reverse space-x-4">
             
             {/* Cart Button */}
-            <button 
+            <div 
               onClick={handleCartClick}
-              type="button"
-              className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors"
+              className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors cursor-pointer"
+              role="button"
+              tabIndex={0}
               aria-label="سبد خرید"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCartClick(e as any);
+                }
+              }}
             >
               <ShoppingBag size={24} />
               {totalItems() > 0 && (
@@ -80,7 +87,7 @@ const Header: React.FC = () => {
                   {digitsFa(totalItems())}
                 </span>
               )}
-            </button>
+            </div>
             
             {/* User Menu / Login Button */}
             {user ? (
