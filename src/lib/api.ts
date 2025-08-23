@@ -192,6 +192,22 @@ class ApiClient {
     return response.json();
   }
 
+  // Search products
+  async searchProducts(query: string, limit: number = 6): Promise<Product[]> {
+    return this.request(`/products?query=${encodeURIComponent(query)}&limit=${limit}`);
+  }
+
+  // Orders
+  async createOrder(orderData: {
+    items: Array<{ product_id: number; quantity: number; price: number }>;
+    total: number;
+  }) {
+    return this.request('/orders', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  }
+
   // Health check
   async healthCheck() {
     return this.request('/health');

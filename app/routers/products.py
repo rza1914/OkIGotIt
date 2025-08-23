@@ -40,18 +40,28 @@ def get_products(
     skip: int = 0,
     limit: int = 100,
     category: str = None,
+    query: str = None,
     active_only: bool = True,
     db: Session = Depends(get_db)
 ):
-    query = db.query(ProductModel)
+    db_query = db.query(ProductModel)
     
     if active_only:
-        query = query.filter(ProductModel.is_active == True)
+        db_query = db_query.filter(ProductModel.is_active == True)
     
     if category:
-        query = query.filter(ProductModel.category == category)
+        db_query = db_query.filter(ProductModel.category == category)
     
-    products = query.offset(skip).limit(limit).all()
+    # Search functionality
+    if query and len(query.strip()) >= 2:
+        search_term = f"%{query.strip()}%"
+        db_query = db_query.filter(
+            ProductModel.name.ilike(search_term) |
+            ProductModel.description.ilike(search_term) |
+            ProductModel.category.ilike(search_term)
+        )
+    
+    products = db_query.order_by(ProductModel.created_at.desc()).offset(skip).limit(limit).all()
     return products
 
 

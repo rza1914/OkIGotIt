@@ -6,7 +6,7 @@ from starlette.responses import FileResponse
 from contextlib import asynccontextmanager
 
 from .database import engine, Base
-from .routers import auth, banners, products
+from .routers import auth, banners, products, orders
 
 
 @asynccontextmanager
@@ -77,6 +77,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(banners.router, prefix="/api/v1/banners", tags=["banners"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
+app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])
 
 # Health check endpoint
 @app.get("/api/v1/health")
