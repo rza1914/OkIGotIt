@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse
 from contextlib import asynccontextmanager
 
 from .database import engine, Base
@@ -72,13 +73,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(auth.router, prefix="/v1/auth", tags=["authentication"])
-app.include_router(banners.router, prefix="/v1/banners", tags=["banners"])
-app.include_router(products.router, prefix="/v1/products", tags=["products"])
+# Include routers with /api prefix
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
+app.include_router(banners.router, prefix="/api/v1/banners", tags=["banners"])
+app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
 
 # Health check endpoint
-@app.get("/v1/health")
+@app.get("/api/v1/health")
 async def health_check():
     return {"ok": True}
 
@@ -87,6 +88,24 @@ if not os.path.exists("uploads"):
     os.makedirs("uploads")
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# Serve built frontend assets
+if os.path.isdir("dist"):
+    app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
+    # Optional: other root files (manifest, icons)
+    app.mount("/_app", StaticFiles(directory="dist"), name="dist_root")
+
+# SPA fallback: everything not /api or /uploads -> index.html
+@app.get("/{full_path:path}")
+async def spa(full_path: str):
+    # Don't intercept API routes or uploads
+    if full_path.startswith("api/") or full_path.startswith("uploads/"):
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    index_path = os.path.join("dist", "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"detail": "Frontend not built yet. Run: npm run build"}
 
 if __name__ == "__main__":
     import uvicorn
