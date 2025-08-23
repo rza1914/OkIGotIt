@@ -18,9 +18,15 @@ const Header: React.FC = () => {
       className="bg-white shadow-sm border-b border-gray-100"
       onClickCapture={(e) => {
         const target = e.target as HTMLElement;
+        console.log('[HEADER CLICK CAPTURE]', { target: target.tagName, closest_allow_nav: !!target.closest('[data-allow-nav]') });
+        
+        // اجازه navigation برای elements مشخص شده
         if (target.closest('[data-allow-nav]')) return;
         if (target.closest('[data-banner]')) return;
         if (target.closest('button')) return;
+        
+        // مسدود کردن سایر کلیک‌ها فقط برای جلوگیری از اکشن‌های ناخواسته
+        console.log('[HEADER] Preventing click on:', target);
         e.preventDefault();
         e.stopPropagation();
       }}

@@ -1,0 +1,221 @@
+این پرامپتِ دیباگ→فیکس رو عیناً به Replit AI بده. اول دقیق ریشهٔ مشکل «کلیکِ داشبورد هیچ واکنشی نداره» رو پیدا می‌کنه، بعد بستهٔ حلّ رو اعمال می‌کنه. (قانون: ❗️به `vite.config.ts` دست نزن.)
+
+---
+
+# 🔎 مرحلهٔ دیباگ — بفهمیم کلیک کجا می‌میره؟
+
+## 0) قواعد
+
+* هیچ تغییری در `vite.config.ts` انجام نده.
+* در همهٔ تغییرات، لاگ‌ها و ابزارهای دیباگ موقتی هستند و در انتها پاک می‌شوند.
+
+## 1) ردیاب سراسری کلیک/کیبورد در فاز Capture
+
+**ایجاد فایل:** `src/dev/ClickInspector.tsx`
+
+```tsx
+import { useEffect } from "react";
+
+export default function ClickInspector() {
+  useEffect(() => {
+    const log = (label: string, e: any) => {
+      const t = e.target as HTMLElement;
+      const path = (e.composedPath?.() || []);
+      // کم‌حجم و مفید: نوع عنصر + data-attributes مهم
+      const info = path.slice(0, 6).map((el: any) => {
+        if (!(el instanceof HTMLElement)) return String(el?.nodeName || el);
+        const tag = el.tagName.toLowerCase();
+        const id = el.id ? `#${el.id}` : "";
+        const cls = el.className ? `.${String(el.className).split(" ").filter(Boolean).slice(0,3).join(".")}` : "";
+        const allow = el.closest?.("[data-allow-nav]") ? " allow" : "";
+        const noNav = el.closest?.("[data-no-nav]") ? " noNav" : "";
+        const banner = el.closest?.("[data-banner]") ? " banner" : "";
+        return `${tag}${id}${cls}${allow}${noNav}${banner}`;
+      });
+      console.log(`[CAPTURE ${label}]`, { key: e.key, target: t, path: info });
+    };
+
+    const pd = (e: Event) => log("pointerdown", e);
+    const ck = (e: Event) => log("click", e);
+    const kd = (e: KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") log("keydown", e);
+    };
+
+    window.addEventListener("pointerdown", pd, true);
+    window.addEventListener("click", ck, true);
+    window.addEventListener("keydown", kd, true);
+    return () => {
+      window.removeEventListener("pointerdown", pd, true);
+      window.removeEventListener("click", ck, true);
+      window.removeEventListener("keydown", kd, true);
+    };
+  }, []);
+  return null;
+}
+```
+
+**نصب موقت:** `src/main.tsx`
+
+```tsx
+import ClickInspector from "./dev/ClickInspector";
+// ...
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <CartProvider>
+    <BrowserRouter>
+      {/* فقط برای دیباگ، آخر کار حذف می‌شود */}
+      <ClickInspector />
+      <NoNavBoundary>{/* اگر داری */}<App /></NoNavBoundary>
+    </BrowserRouter>
+  </CartProvider>
+);
+```
+
+> حالا هر کلیک در کنسول با `[CAPTURE ...]` لاگ می‌شود. هدف: ببینیم هنگام کلیک روی «داشبورد»، کدوم والد‌ها در مسیر هستند و آیا `[data-allow-nav]` دیده می‌شود یا کلیک قبل از رسیدن به `Link` می‌میرد.
+
+## 2) نشانگر مسیر فعلی (برای اطمینان از تغییر Route)
+
+**ایجاد فایل:** `src/dev/PathDebug.tsx`
+
+```tsx
+import { useLocation } from "react-router-dom";
+export default function PathDebug() {
+  const { pathname } = useLocation();
+  return (
+    <div style={{position:'fixed',left:8,bottom:8,background:'#000a',color:'#fff',padding:'4px 8px',borderRadius:8,fontSize:12,zIndex:99999}}>
+      {pathname}
+    </div>
+  );
+}
+```
+
+در `Layout` بعد از `<Header />` اضافه کن و موقتاً نگه دار:
+
+```tsx
+<PathDebug />
+```
+
+## 3) هایلایتِ ناحیه‌های حساس
+
+در `src/index.css` موقتاً اضافه کن:
+
+```css
+/* فقط برای دیباگ – آخر کار پاک می‌شود */
+[data-allow-nav]{ outline:2px solid #22c55e55; }  /* سبز: مجاز به ناوبری */
+[data-no-nav]{ outline:2px solid #ef444455; }     /* قرمز: نباید ناوبری کند */
+[data-banner]{ outline:2px solid #f59e0b55; }     /* نارنجی: بنر */
+```
+
+## 4) چک CLI برای هندلرهای مشکوک
+
+در شل Replit این‌ها را اجرا کن و نتایج را بررسی/اصلاح کن:
+
+```bash
+# هر navigate('/dashboard') یا to="/dashboard"
+grep -R "navigate('/dashboard'" -n src || true
+grep -R 'to="/dashboard"' -n src || true
+
+# کلیک‌های سراسری/گلوبال
+grep -R "addEventListener('click'" -n src || true
+grep -R "document.addEventListener('click'" -n src || true
+
+# لینک‌های کشسان/پوشاننده کل نواحی
+grep -R "absolute[^\\n]*inset-0" -n src || true
+
+# هر onClick ای که روی والدِ بزرگ ناوبری می‌دهد
+grep -R "onClick={(.*navigate" -n src || true
+```
+
+> اگر چیزی مثل `absolute inset-0` روی لینکی دیدی که parentش height/relative نداره، ممکنه کل هدر یا کل صفحه رو پوشونده باشه.
+
+## 5) لاگین → ناوبری
+
+در فرم لاگین (submit)، لاگ و ناوبری موقت بگذار:
+
+```tsx
+console.log("[LOGIN OK] navigating to /dashboard");
+navigate("/dashboard", { replace: true });
+```
+
+اگر این لاگ چاپ شد ولی مسیر تغییر نکرد، کلیک‌ها/ناوبری جای دیگری مسدود می‌شوند (گارد بیش‌ازحد، overlay، …). اگر لاگ چاپ نشد، خود لاگین مشکل دارد.
+
+---
+
+# 🧯 مرحلهٔ فیکس — بستهٔ اصلاح بر اساس یافته‌ها
+
+## A) لینک داشبورد باید «صراحتاً مجاز به ناوبری» باشد
+
+در هر جایی که لینک داشبورد داری (هدر/منوی کاربر):
+
+```tsx
+import { NavLink } from "react-router-dom";
+<NavLink to="/dashboard" data-allow-nav className="text-gray-700 hover:text-rose-600 font-medium">
+  داشبورد
+</NavLink>
+```
+
+## B) نرم‌کردن گارد سراسری (اگر داری)
+
+اگر `NoNavBoundary` داری، آن را فقط برای عناصر علامت‌خورده فعال کن، نه همهٔ دکمه‌ها:
+
+```tsx
+// NoNavBoundary.tsx
+const STOP_SEL = "[data-no-nav], [data-button]"; // ❗️دیگه button عمومی نیست
+function shouldSwallow(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.closest("[data-allow-nav]")) return false; // به لینک‌های مجاز دست نزن
+  return !!target.closest(STOP_SEL);
+}
+```
+
+* هر دکمهٔ صرفاً کلاینتی (سبد، مودال، تب‌ها…) → `data-no-nav`.
+* هر لینک/دکمه‌ای که باید route عوض کند → `data-allow-nav`.
+
+## C) گارد سبک روی خود Header (failsafe)
+
+روی `<header>` اگر گارد داری، منطقش همین باشد:
+
+```tsx
+const stopHeaderNav = (e: React.SyntheticEvent) => {
+  const t = e.target as HTMLElement;
+  if (t.closest("[data-allow-nav]")) return; // اجازهٔ ناوبری
+  if (t.closest("[data-no-nav]")) { e.preventDefault(); e.stopPropagation(); } // اکشن کلاینتی
+};
+<header onPointerDownCapture={stopHeaderNav} onClickCapture={stopHeaderNav} />
+```
+
+(اگر این گارد باعث «هیچ واکنشی» می‌شود، دقیقاً به‌همین شکل تنظیمش کن و نه سفت‌تر.)
+
+## D) منوی کاربر/اُورلی‌ها روی لینک‌ها نیافتند
+
+* اگر Dropdown یا Overlay دارید که کل هدر را می‌پوشاند، روی overlay `pointer-events-auto` فقط وقتی باز است، و روی محتوا `pointer-events-none` **نباشد**.
+* مطمئن شو زنجیرهٔ `z-index` باعث پوشش لینک‌ها نشده.
+
+## E) Route و Guard
+
+* در `App.tsx`:
+
+```tsx
+<Route element={<RequireAuth />}>
+  <Route path="dashboard" element={<Dashboard />} />
+</Route>
+```
+
+* در `RequireAuth` حتماً حالت `loading` را هندل کن؛ تا وقتی Auth هیدرات نشده، redirect نکن.
+* بعد از لاگین، `navigate('/dashboard', { replace: true })`.
+
+## F) API 401 redirectهای سراسری نداشته باشد
+
+در helper `api(...)` اگر 401 آمد:
+
+* **Redirect نکن**؛ فقط مودال لاگین را باز کن (event `auth:open`) و خطا بده. Redirect خودکار می‌تواند ناوبری جاری را خراب کند.
+
+---
+
+# ✅ پذیرش (Acceptance)
+
+* کلیک روی «داشبورد» در کنسول `[CAPTURE click]` می‌بینی که `data-allow-nav` در مسیر هست و `PathDebug` مسیر را به `/dashboard` نشان می‌دهد.
+* هیچ overlay یا stretched-link کل هدر را نمی‌پوشاند (outline‌ها فقط روی عناصر مربوطه دیده می‌شوند).
+* لاگین موفق → لاگ `[LOGIN OK]` → بلافاصله `/dashboard`.
+* هیچ کلیکی «بی‌واکنش» نیست؛ یا ناوبری می‌کند (لینک‌های مجاز) یا اکشن کلاینتی انجام می‌دهد (data-no-nav).
+
+> بعد از حل، `ClickInspector`, `PathDebug`, و outlineهای CSS دیباگ را پاک کن.

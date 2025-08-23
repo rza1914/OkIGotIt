@@ -6,6 +6,7 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { CartProvider } from '../contexts/CartContext';
 import AuthModal from './auth/AuthModal';
 import CartDrawer from './cart/CartDrawer';
+import PathDebug from '../dev/PathDebug';
 
 
 const Layout: React.FC = () => {
@@ -14,6 +15,7 @@ const Layout: React.FC = () => {
       <CartProvider>
         <>
           <Header />
+          <PathDebug />
           <main dir="rtl">
             <Outlet />
           </main>

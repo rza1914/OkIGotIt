@@ -90,6 +90,7 @@ const BannerGrid: React.FC = () => {
                   className="absolute inset-0"
                   aria-label={banner.title || 'لینک محصول'}
                   data-banner
+                  data-allow-nav
                   data-banner-id={banner.id}
                   data-banner-pos={banner.position}
                   onClick={(e) => e.stopPropagation()}

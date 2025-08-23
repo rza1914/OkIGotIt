@@ -86,6 +86,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const userData = await apiClient.getCurrentUser();
       setUser(userData);
       setIsAuthOpen(false);
+      
+      console.log('[LOGIN OK] navigating to /dashboard');
+      // Note: We don't navigate here, let the user click dashboard manually
     } catch (error) {
       throw error;
     }
