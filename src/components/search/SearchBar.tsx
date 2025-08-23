@@ -109,15 +109,33 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectProduct }) => {
       onSelectProduct(result);
     } else {
       // Default behavior: navigate to product page
-      console.log('SearchBar would navigate to:', `/product/${result.id}`);
-      // Temporarily disabled: window.location.href = `/product/${result.id}`;
+      window.location.href = `/product/${result.id}`;
     }
   };
 
-  // Handle outside clicks - TEMPORARILY DISABLED FOR DEBUGGING
+  // Handle outside clicks
   useEffect(() => {
-    console.log('SearchBar useEffect: showResults changed to', showResults);
-    // Completely disabled to test if this is causing cart redirect
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Don't close if clicking on cart button or other controls
+      if (
+        target.closest('[data-cart-button]') ||
+        target.closest('[role="button"]') ||
+        target.closest('button')
+      ) {
+        return;
+      }
+      
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+
+    if (showResults) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
     return () => {};
   }, [showResults]);
 

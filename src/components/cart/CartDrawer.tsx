@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,20 +14,17 @@ const CartDrawer: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
 
-  // Lock body scroll when drawer is open - temporarily disabled
-  // useLockBodyScroll(state.isOpen);
+  // قفل اسکرول بدنه هنگام باز بودن
+  useLockBodyScroll(state.isOpen);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
-    console.log('Overlay clicked, closing cart');
     if (e.target === e.currentTarget) {
       closeCart();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    console.log('Cart drawer key pressed:', e.key);
     if (e.key === 'Escape') {
-      console.log('Escape pressed, closing cart');
       closeCart();
     }
   };
@@ -71,13 +69,17 @@ const CartDrawer: React.FC = () => {
 
   if (!state.isOpen) return null;
 
-  return (
+  const ui = (
     <div
       className="fixed inset-0 z-50 overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="cart-title"
       onKeyDown={handleKeyDown}
+      // پیشگیری از حباب کلیک به والدهای زیرین
+      onClickCapture={(e) => e.stopPropagation()}
+      onMouseDownCapture={(e) => e.stopPropagation()}
+      onTouchStartCapture={(e) => e.stopPropagation()}
     >
       {/* Overlay */}
       <div
@@ -88,7 +90,13 @@ const CartDrawer: React.FC = () => {
 
       {/* Drawer Panel */}
       <div className="fixed inset-y-0 right-0 w-full max-w-md sm:max-w-lg">
-        <div className="h-full bg-white/60 backdrop-blur-xl border-l border-black/10 shadow-2xl rounded-l-2xl flex flex-col">
+        <div 
+          className="h-full bg-white/60 backdrop-blur-xl border-l border-black/10 shadow-2xl rounded-l-2xl flex flex-col"
+          // جلوگیری از عبور کلیک داخل پنل
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        >
           
           {/* Header */}
           <div className="flex items-center justify-between p-6 pb-4 border-b border-black/10">
@@ -102,7 +110,8 @@ const CartDrawer: React.FC = () => {
             </h2>
             
             <button
-              onClick={closeCart}
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeCart(); }}
               className="w-8 h-8 rounded-full bg-white/70 hover:bg-white/90 flex items-center justify-center transition-colors"
               aria-label="بستن سبد خرید"
             >
@@ -164,7 +173,8 @@ const CartDrawer: React.FC = () => {
 
                   {/* Submit Order Button */}
                   <button
-                    onClick={handleSubmitOrder}
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmitOrder(); }}
                     disabled={isProcessing || state.items.length === 0}
                     className="w-full btn-primary py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -178,6 +188,8 @@ const CartDrawer: React.FC = () => {
       </div>
     </div>
   );
+
+  return createPortal(ui, document.body);
 };
 
 export default CartDrawer;
