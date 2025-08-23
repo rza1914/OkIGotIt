@@ -1,13 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { ShoppingBag, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import { digitsFa } from '../lib/fmt';
 import UserMenu from './UserMenu';
 import SearchBar from './search/SearchBar';
-import HeaderCartButton from './HeaderCartButton';
 
 const Header: React.FC = () => {
   const { user, openAuthModal } = useAuth();
+  const { openCart, totalItems } = useCart();
 
   
 
@@ -36,12 +38,9 @@ const Header: React.FC = () => {
               />
             </Link>
             
-            {/* SearchBar next to logo - TEMPORARILY DISABLED */}
-            {/* <div className="hidden sm:block">
+            {/* SearchBar next to logo */}
+            <div className="hidden sm:block">
               <SearchBar />
-            </div> */}
-            <div className="hidden sm:block bg-yellow-200 p-2">
-              SEARCH DISABLED
             </div>
           </div>
 
@@ -73,22 +72,27 @@ const Header: React.FC = () => {
           {/* Left Side: User Menu + Cart */}
           <div className="flex items-center space-x-reverse space-x-4">
             
-            {/* Cart Button - TEMPORARY DEBUG */}
+            {/* Cart Button */}
             <button
               type="button"
-              style={{ background: 'red', color: 'white', padding: '8px' }}
+              aria-label="سبد خرید"
+              className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors"
               onClick={(e) => {
-                console.log('DEBUG: Direct cart click');
                 e.preventDefault();
                 e.stopPropagation();
-                alert('Cart clicked - should not navigate!');
+                openCart();
               }}
             >
-              🛒 TEST
+              <ShoppingBag size={24} />
+              {totalItems() > 0 && (
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs bg-gradient-to-r from-amber-400 to-rose-400 text-white rounded-full">
+                  {digitsFa(totalItems())}
+                </span>
+              )}
             </button>
             
-            {/* User Menu / Login Button - TEMPORARILY DISABLED */}
-            {/* {user ? (
+            {/* User Menu / Login Button */}
+            {user ? (
               <UserMenu />
             ) : (
               <button 
@@ -98,8 +102,7 @@ const Header: React.FC = () => {
                 <User size={20} />
                 <span className="text-sm font-medium">ورود/ثبت‌نام</span>
               </button>
-            )} */}
-            <div>USER MENU DISABLED</div>
+            )}
           </div>
         </div>
 
