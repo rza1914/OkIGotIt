@@ -11,12 +11,6 @@ const Header: React.FC = () => {
   const { user, openAuthModal } = useAuth();
   const { openCart, totalItems } = useCart();
   
-  // Test function for debugging
-  const handleCartClick = () => {
-    console.log('Cart button clicked!');
-    alert('سبد خرید کلیک شد!'); // برای تست مستقیم
-    openCart();
-  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-100">
@@ -66,7 +60,7 @@ const Header: React.FC = () => {
             
             {/* Cart Button */}
             <button 
-              onClick={handleCartClick}
+              onClick={openCart}
               className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors"
               aria-label="سبد خرید"
             >

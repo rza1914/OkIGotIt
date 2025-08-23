@@ -66,6 +66,9 @@ const CartDrawer: React.FC = () => {
     }
   };
 
+  // Debug cart state
+  console.log('CartDrawer render - state.isOpen:', state.isOpen);
+  
   if (!state.isOpen) return null;
 
   return (
