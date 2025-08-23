@@ -11,14 +11,6 @@ const Header: React.FC = () => {
   const { user, openAuthModal } = useAuth();
   const { openCart, totalItems } = useCart();
 
-  const handleCartClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Cart click prevented, calling openCart()');
-    openCart();
-    // Force check after click
-    setTimeout(() => console.log('Cart should be open now'), 100);
-  };
   
 
   return (
@@ -36,10 +28,10 @@ const Header: React.FC = () => {
               />
             </Link>
             
-            {/* SearchBar next to logo - temporaily disabled for debugging */}
-            {/*<div className="hidden sm:block">
+            {/* SearchBar next to logo */}
+            <div className="hidden sm:block">
               <SearchBar />
-            </div>*/}
+            </div>
           </div>
 
           {/* Center: Navigation */}
@@ -68,17 +60,16 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-reverse space-x-4">
             
             {/* Cart Button */}
-            <div 
-              onClick={handleCartClick}
-              className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors cursor-pointer"
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               aria-label="سبد خرید"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleCartClick(e as any);
-                }
+              className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors"
+              onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openCart();
               }}
             >
               <ShoppingBag size={24} />
@@ -87,7 +78,7 @@ const Header: React.FC = () => {
                   {digitsFa(totalItems())}
                 </span>
               )}
-            </div>
+            </button>
             
             {/* User Menu / Login Button */}
             {user ? (
@@ -104,10 +95,10 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile SearchBar - temporaily disabled for debugging */}
-        {/*<div className="sm:hidden pb-3 border-t border-gray-100 mt-3 pt-3">
+        {/* Mobile SearchBar */}
+        <div className="sm:hidden pb-3 border-t border-gray-100 mt-3 pt-3">
           <SearchBar />
-        </div>*/}
+        </div>
         
       </div>
     </header>

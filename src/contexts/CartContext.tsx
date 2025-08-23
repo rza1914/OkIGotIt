@@ -25,11 +25,9 @@ type CartAction =
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'OPEN_CART':
-      console.log('Reducer: OPEN_CART action, setting isOpen to true');
       return { ...state, isOpen: true };
     
     case 'CLOSE_CART':
-      console.log('Reducer: CLOSE_CART action, setting isOpen to false');
       return { ...state, isOpen: false };
     
     case 'ADD_ITEM': {
@@ -122,12 +120,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state.items]);
   
   const openCart = () => {
-    console.log('openCart called, dispatching OPEN_CART');
     dispatch({ type: 'OPEN_CART' });
   };
   const closeCart = () => {
-    console.log('closeCart called, dispatching CLOSE_CART');
-    console.trace('Stack trace for closeCart call:');
     dispatch({ type: 'CLOSE_CART' });
   };
   

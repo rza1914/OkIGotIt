@@ -17,14 +17,12 @@ const CartDrawer: React.FC = () => {
   useLockBodyScroll(state.isOpen);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
-    console.log('Overlay clicked, target:', e.target, 'currentTarget:', e.currentTarget);
     if (e.target === e.currentTarget) {
       closeCart();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    console.log('Cart drawer key pressed:', e.key);
     if (e.key === 'Escape') {
       closeCart();
     }
@@ -68,7 +66,6 @@ const CartDrawer: React.FC = () => {
     }
   };
 
-  console.log('CartDrawer render, state.isOpen:', state.isOpen);
   if (!state.isOpen) return null;
 
   return (
