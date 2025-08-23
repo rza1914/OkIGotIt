@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Dashboard from './pages/Dashboard';
@@ -11,23 +11,21 @@ import CartDrawer from './components/cart/CartDrawer';
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <CartProvider>
-          <div className="min-h-screen bg-white">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route element={<RequireAuth />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-              </Route>
-            </Routes>
-            <AuthModal />
-            <CartDrawer />
-          </div>
-        </CartProvider>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <CartProvider>
+        <div className="min-h-screen bg-white">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
+          </Routes>
+          <AuthModal />
+          <CartDrawer />
+        </div>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

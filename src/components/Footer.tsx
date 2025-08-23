@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Instagram, MessageCircle, Mail, Phone } from 'lucide-react';
 
 const Footer: React.FC = () => {
@@ -20,11 +21,11 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">دسترسی سریع</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">صفحه اصلی</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">محصولات</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">مجله</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">درباره ما</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">تماس با ما</a></li>
+              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">صفحه اصلی</Link></li>
+              <li><span className="text-gray-400">محصولات</span></li>
+              <li><span className="text-gray-400">مجله</span></li>
+              <li><span className="text-gray-400">درباره ما</span></li>
+              <li><span className="text-gray-400">تماس با ما</span></li>
             </ul>
           </div>
 
@@ -32,10 +33,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">خدمات مشتریان</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">راهنمای خرید</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">سوالات متداول</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">شرایط استفاده</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">حریم خصوصی</a></li>
+              <li><span className="text-gray-400">راهنمای خرید</span></li>
+              <li><span className="text-gray-400">سوالات متداول</span></li>
+              <li><span className="text-gray-400">شرایط استفاده</span></li>
+              <li><span className="text-gray-400">حریم خصوصی</span></li>
             </ul>
           </div>
 
@@ -57,12 +58,12 @@ const Footer: React.FC = () => {
             <div className="mt-6">
               <h5 className="text-sm font-semibold mb-3">شبکه‌های اجتماعی</h5>
               <div className="flex space-x-reverse space-x-4">
-                <a href="#" className="text-gray-400 hover:text-pink-400 transition-colors">
+                <button type="button" className="text-gray-400 hover:text-pink-400 transition-colors">
                   <Instagram size={20} />
-                </a>
-                <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
+                </button>
+                <button type="button" className="text-gray-400 hover:text-blue-400 transition-colors">
                   <MessageCircle size={20} />
-                </a>
+                </button>
               </div>
             </div>
           </div>
