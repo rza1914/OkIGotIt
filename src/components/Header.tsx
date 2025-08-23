@@ -12,13 +12,23 @@ const Header: React.FC = () => {
   
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-100">
+    <header 
+      className="bg-white shadow-sm border-b border-gray-100"
+      onClickCapture={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('[data-allow-nav]')) return;
+        if (target.closest('[data-banner]')) return;
+        if (target.closest('button')) return;
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
           {/* Right Side: Logo + Search */}
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <Link to="/" data-allow-nav className="flex items-center hover:opacity-80 transition-opacity">
               <img 
                 src="/logo-iShop.png" 
                 alt="آی‌شاپ" 
@@ -39,18 +49,21 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex items-center space-x-reverse space-x-8">
             <Link 
               to="/" 
+              data-allow-nav
               className="text-gray-700 hover:text-rose-600 font-medium transition-colors"
             >
               خانه
             </Link>
             <Link 
               to="/products" 
+              data-allow-nav
               className="text-gray-700 hover:text-rose-600 font-medium transition-colors"
             >
               محصولات
             </Link>
             <Link 
               to="/blog" 
+              data-allow-nav
               className="text-gray-700 hover:text-rose-600 font-medium transition-colors"
             >
               وبلاگ

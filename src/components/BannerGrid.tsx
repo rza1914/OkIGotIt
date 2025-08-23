@@ -51,7 +51,7 @@ const BannerGrid: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {banners.map((banner) => (
-            <div key={banner.id} className="card group cursor-pointer">
+            <div key={banner.id} className="card group cursor-pointer relative h-80">
               <div className="relative overflow-hidden">
                 <img
                   src={banner.image_url}
@@ -89,6 +89,10 @@ const BannerGrid: React.FC = () => {
                   to="/products"
                   className="absolute inset-0"
                   aria-label={banner.title || 'لینک محصول'}
+                  data-banner
+                  data-banner-id={banner.id}
+                  data-banner-pos={banner.position}
+                  onClick={(e) => e.stopPropagation()}
                 />
               )}
             </div>
