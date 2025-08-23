@@ -5,10 +5,21 @@ from datetime import datetime
 
 class UserBase(BaseModel):
     username: str
+    first_name: str
+    last_name: str
+    email: str
 
 
 class UserCreate(UserBase):
     password: str
+
+
+class UserRegister(BaseModel):
+    first_name: str
+    last_name: str
+    email_or_phone: str
+    password: str
+    username: str
 
 
 class User(UserBase):

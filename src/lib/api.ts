@@ -27,13 +27,29 @@ export interface Product {
 }
 
 export interface LoginRequest {
-  username: string;
+  identifier: string;
   password: string;
+}
+
+export interface RegisterRequest {
+  first_name: string;
+  last_name: string;
+  email_or_phone: string;
+  password: string;
+  username: string;
 }
 
 export interface LoginResponse {
   access_token: string;
   token_type: string;
+}
+
+export interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  username: string;
 }
 
 class ApiClient {
@@ -97,7 +113,7 @@ class ApiClient {
   // Auth
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const formData = new FormData();
-    formData.append('username', credentials.username);
+    formData.append('username', credentials.identifier);
     formData.append('password', credentials.password);
 
     await this.init();
@@ -115,7 +131,14 @@ class ApiClient {
     return data;
   }
 
-  async getCurrentUser() {
+  async register(data: RegisterRequest): Promise<LoginResponse> {
+    return this.request('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getCurrentUser(): Promise<User> {
     return this.request('/auth/user');
   }
 

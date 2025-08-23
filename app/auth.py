@@ -38,8 +38,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-def authenticate_user(db: Session, username: str, password: str):
-    user = db.query(User).filter(User.username == username).first()
+def authenticate_user(db: Session, identifier: str, password: str):
+    user = db.query(User).filter(
+        (User.username == identifier) | (User.email == identifier)
+    ).first()
     if not user:
         return False
     if not verify_password(password, user.password_hash):
