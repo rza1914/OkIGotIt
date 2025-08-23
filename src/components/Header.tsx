@@ -36,10 +36,10 @@ const Header: React.FC = () => {
               />
             </Link>
             
-            {/* SearchBar next to logo */}
-            <div className="hidden sm:block">
+            {/* SearchBar next to logo - temporaily disabled for debugging */}
+            {/*<div className="hidden sm:block">
               <SearchBar />
-            </div>
+            </div>*/}
           </div>
 
           {/* Center: Navigation */}
@@ -104,10 +104,10 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile SearchBar */}
-        <div className="sm:hidden pb-3 border-t border-gray-100 mt-3 pt-3">
+        {/* Mobile SearchBar - temporaily disabled for debugging */}
+        {/*<div className="sm:hidden pb-3 border-t border-gray-100 mt-3 pt-3">
           <SearchBar />
-        </div>
+        </div>*/}
         
       </div>
     </header>

@@ -116,13 +116,27 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectProduct }) => {
   // Handle outside clicks
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Don't close if clicking on cart button or other controls
+      if (
+        target.closest('[aria-label="سبد خرید"]') ||
+        target.closest('[role="button"]') ||
+        target.closest('button')
+      ) {
+        return;
+      }
+      
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowResults(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    if (showResults) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {};
   }, []);
 
   // Global keyboard shortcut (/ or Ctrl+K)
