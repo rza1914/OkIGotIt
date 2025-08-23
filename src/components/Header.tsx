@@ -64,12 +64,25 @@ const Header: React.FC = () => {
               type="button"
               aria-label="سبد خرید"
               className="relative p-2 text-gray-600 hover:text-rose-500 transition-colors"
-              onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onMouseDown={(e) => { 
+                console.log('Cart mousedown');
+                e.preventDefault(); 
+                e.stopPropagation(); 
+              }}
+              onTouchStart={(e) => { 
+                console.log('Cart touchstart');
+                e.preventDefault(); 
+                e.stopPropagation(); 
+              }}
               onClick={(e) => {
+                console.log('Cart clicked - preventing and calling openCart');
                 e.preventDefault();
                 e.stopPropagation();
                 openCart();
+                // Check if it worked
+                setTimeout(() => {
+                  console.log('Cart should be open, checking...');
+                }, 50);
               }}
             >
               <ShoppingBag size={24} />
