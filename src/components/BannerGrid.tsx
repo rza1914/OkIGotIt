@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
-import { apiClient, Banner } from '../lib/api';
+import { apiClient, Banner, ApiError } from '../lib/api';
 import { formatPrice } from '../lib/date';
 
 const BannerGrid: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -16,8 +17,19 @@ const BannerGrid: React.FC = () => {
           .filter(b => b.key.startsWith('small') && b.active)
           .sort((a, b) => a.position - b.position);
         setBanners(smallBanners);
+        setError(null);
       } catch (error) {
         console.error('Failed to fetch banners:', error);
+        const apiError = error as ApiError;
+        if (apiError.isHtmlResponse) {
+          setError('API server not responding correctly. Please check server status.');
+        } else if (apiError.status === 404) {
+          setError('Banner API endpoint not found.');
+        } else if (apiError.message.includes('Network error')) {
+          setError('Cannot connect to server. Please check your connection.');
+        } else {
+          setError('Failed to load banners. Please try again later.');
+        }
       } finally {
         setLoading(false);
       }
@@ -100,7 +112,20 @@ const BannerGrid: React.FC = () => {
           ))}
         </div>
 
-        {banners.length === 0 && !loading && (
+        {error ? (
+          <div className="text-center py-12">
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 max-w-md mx-auto">
+              <p className="text-red-600 text-lg mb-2">خطا در بارگذاری بنرها</p>
+              <p className="text-red-500 text-sm mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                تلاش مجدد
+              </button>
+            </div>
+          </div>
+        ) : banners.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">هیچ بنری موجود نیست</p>
           </div>

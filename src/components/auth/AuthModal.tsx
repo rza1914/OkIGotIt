@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
-import { X, Eye, EyeOff } from 'lucide-react';
+import { X, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { ApiError } from '../../lib/api';
+
+interface AuthError {
+  message: string;
+  type: 'error' | 'success' | 'warning';
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+}
 
 const AuthModal: React.FC = () => {
   const { isAuthOpen, activeTab, setActiveTab, closeAuthModal, login, register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [authError, setAuthError] = useState<AuthError | null>(null);
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -26,13 +36,35 @@ const AuthModal: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setAuthError(null);
 
     try {
       await login(loginForm);
       setLoginForm({ identifier: '', password: '' });
+      setAuthError({
+        message: 'ورود موفقیت‌آمیز بود!',
+        type: 'success'
+      });
     } catch (err: any) {
-      setError('نام کاربری یا رمز عبور اشتباه است');
+      const apiError = err as ApiError;
+      console.error('Login error:', apiError);
+      
+      if (apiError.status === 401) {
+        setAuthError({
+          message: 'نام کاربری یا رمز عبور اشتباه است',
+          type: 'error'
+        });
+      } else if (apiError.message?.includes('Network error')) {
+        setAuthError({
+          message: 'خطا در اتصال به سرور. لطفاً اتصال اینترنت را بررسی کنید',
+          type: 'error'
+        });
+      } else {
+        setAuthError({
+          message: 'خطا در ورود. لطفاً دوباره تلاش کنید',
+          type: 'error'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -41,7 +73,27 @@ const AuthModal: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setAuthError(null);
+
+    // Client-side validation
+    if (!registerForm.first_name || !registerForm.last_name || !registerForm.username || 
+        !registerForm.email_or_phone || !registerForm.password) {
+      setAuthError({
+        message: 'لطفاً تمام فیلدها را پر کنید',
+        type: 'error'
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (registerForm.password.length < 6) {
+      setAuthError({
+        message: 'رمز عبور باید حداقل ۶ کاراکتر باشد',
+        type: 'error'
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       await register(registerForm);
@@ -52,8 +104,47 @@ const AuthModal: React.FC = () => {
         password: '',
         username: '',
       });
+      setAuthError({
+        message: 'ثبت‌نام موفقیت‌آمیز بود! خوش آمدید!',
+        type: 'success'
+      });
     } catch (err: any) {
-      setError('خطا در ثبت‌نام. لطفاً دوباره تلاش کنید');
+      const apiError = err as ApiError;
+      console.error('Registration error:', apiError);
+      
+      if (apiError.message?.includes('already registered')) {
+        setAuthError({
+          message: 'این نام کاربری یا ایمیل قبلاً ثبت شده است',
+          type: 'warning',
+          action: {
+            label: 'ورود به حساب',
+            onClick: () => {
+              setActiveTab('login');
+              setAuthError(null);
+            }
+          }
+        });
+      } else if (apiError.status === 400) {
+        setAuthError({
+          message: 'اطلاعات وارد شده نامعتبر است. لطفاً بررسی کنید',
+          type: 'error'
+        });
+      } else if (apiError.status === 422) {
+        setAuthError({
+          message: 'لطفاً تمام فیلدها را به درستی پر کنید',
+          type: 'error'
+        });
+      } else if (apiError.message?.includes('Network error')) {
+        setAuthError({
+          message: 'خطا در اتصال به سرور. لطفاً اتصال اینترنت را بررسی کنید',
+          type: 'error'
+        });
+      } else {
+        setAuthError({
+          message: 'خطا در ثبت‌نام. لطفاً دوباره تلاش کنید',
+          type: 'error'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -63,6 +154,12 @@ const AuthModal: React.FC = () => {
     if (e.target === e.currentTarget) {
       closeAuthModal();
     }
+  };
+
+  const handleTabSwitch = (tab: 'login' | 'register') => {
+    setActiveTab(tab);
+    setAuthError(null);
+    setLoading(false);
   };
 
   if (!isAuthOpen) return null;
@@ -77,7 +174,7 @@ const AuthModal: React.FC = () => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
           <div className="flex gap-1">
             <button
-              onClick={() => setActiveTab('login')}
+              onClick={() => handleTabSwitch('login')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'login'
                   ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white'
@@ -87,7 +184,7 @@ const AuthModal: React.FC = () => {
               ورود
             </button>
             <button
-              onClick={() => setActiveTab('register')}
+              onClick={() => handleTabSwitch('register')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'register'
                   ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white'
@@ -107,9 +204,34 @@ const AuthModal: React.FC = () => {
 
         {/* Content */}
         <div className="p-6">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
+          {authError && (
+            <div className={`mb-4 p-3 rounded-lg text-sm flex items-start gap-2 ${
+              authError.type === 'error' ? 'bg-red-50 border border-red-200 text-red-700' :
+              authError.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' :
+              'bg-yellow-50 border border-yellow-200 text-yellow-700'
+            }`}>
+              {authError.type === 'error' ? (
+                <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+              ) : authError.type === 'success' ? (
+                <CheckCircle size={16} className="mt-0.5 flex-shrink-0" />
+              ) : (
+                <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+              )}
+              <div className="flex-1">
+                <div>{authError.message}</div>
+                {authError.action && (
+                  <button
+                    onClick={authError.action.onClick}
+                    className={`mt-2 text-xs px-3 py-1 rounded font-medium transition-colors ${
+                      authError.type === 'warning' 
+                        ? 'bg-yellow-200 hover:bg-yellow-300 text-yellow-800'
+                        : 'bg-red-200 hover:bg-red-300 text-red-800'
+                    }`}
+                  >
+                    {authError.action.label}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

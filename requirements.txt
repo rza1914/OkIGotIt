@@ -1,0 +1,94 @@
+# iShop E-commerce Platform - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core FastAPI and Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.0.3
+
+# Database and ORM
+sqlalchemy==2.0.23
+alembic==1.13.0
+
+# Authentication and Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+bcrypt==4.1.1
+cryptography==41.0.7
+itsdangerous==2.1.2
+
+# Security and Rate Limiting
+slowapi==0.1.9  # Rate limiting for FastAPI
+secure==0.3.0   # Security headers middleware
+python-csrf==1.0.1  # CSRF protection
+
+# CORS and Middleware
+fastapi-cors==0.0.6
+
+# File Handling
+python-multipart==0.0.6
+aiofiles==23.2.0
+
+# Date and Time (Persian/Jalali Support)
+jdatetime==4.1.0
+persiantools==4.0.0
+
+# HTTP Client for External APIs
+httpx==0.25.2
+requests==2.31.0
+
+# Email Support
+fastapi-mail==1.4.1
+jinja2==3.1.2
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Validation and Data Processing
+email-validator==2.1.0
+phonenumbers==8.13.25
+
+# Image Processing (Optional)
+Pillow==10.1.0
+
+# Caching (Optional)
+redis==5.0.1
+python-redis-lock==4.0.0
+
+# Development and Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2  # For testing
+
+# Production WSGI Server
+gunicorn==21.2.0
+
+# Database Drivers
+# SQLite is built into Python
+# For PostgreSQL: psycopg2-binary==2.9.7
+# For MySQL: PyMySQL==1.1.0
+
+# Monitoring and Logging
+structlog==23.2.0
+
+# API Documentation
+fastapi-users==12.1.2  # Optional for advanced user management
+
+# Persian Text Processing
+hazm==0.7.0  # Persian text processing
+
+# Payment Gateway SDKs (Iranian)
+# zarinpal-python==1.0.3  # Unofficial
+# idpay-python==1.0.1     # Unofficial
+
+# Additional utilities
+python-slugify==8.0.1
+pytz==2023.3
+
+# Development dependencies (install separately in dev)
+# black==23.11.0
+# flake8==6.1.0
+# mypy==1.7.0
+# pre-commit==3.5.0

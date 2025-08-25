@@ -37,6 +37,16 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+def create_access_token_with_role(user, expires_delta: Optional[timedelta] = None):
+    """Create access token with user role information"""
+    data = {
+        "sub": user.username,
+        "user_id": user.id,
+        "role": user.role,
+        "email": user.email
+    }
+    return create_access_token(data, expires_delta)
+
 
 def authenticate_user(db: Session, identifier: str, password: str):
     user = db.query(User).filter(
@@ -68,6 +78,39 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     if user is None:
         raise credentials_exception
     return user
+
+def require_role(required_role: str):
+    """Decorator to require specific role"""
+    def role_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role not in [required_role, "super_admin"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required role: {required_role}"
+            )
+        return current_user
+    return role_checker
+
+def require_admin():
+    """Require admin or super_admin role"""
+    def admin_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role not in ["admin", "super_admin"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied. Admin privileges required."
+            )
+        return current_user
+    return admin_checker
+
+def require_super_admin():
+    """Require super_admin role"""
+    def super_admin_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role != "super_admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied. Super admin privileges required."
+            )
+        return current_user
+    return super_admin_checker
 
 
 # Check for importer token

@@ -1,181 +1,0 @@
-باشه—مشکل «همه دکمه‌ها می‌رن صفحه اصلی» معمولاً از **لینک‌های خام (`<a href="#">` یا `/`)**، **عدم استفاده از React Router**، یا **فرم‌هایی که preventDefault ندارن** پیش میاد. این «پرامپت سوپر‌دی‌تیلد» رو عیناً بده به Replit AI تا همهٔ ناوبری‌ها به‌صورت **کلاینت‌ساید واقعی** درست بشن و هیچ کلیکی باعث رفرش/بازگشت به `/` نشه. (❗️طبق شرط: **به `vite.config.ts` دست نزن**.)
-
----
-
-# 🧭 Replit AI — Fix Client-Side Navigation (No more “everything goes to /”)
-
-**Hard constraints**
-
-* Do **NOT** edit `vite.config.ts`.
-* FastAPI already serves `dist/` at root with `StaticFiles(html=True)` (keep it).
-* Frontend must use **React Router**; no raw `<a href>` for internal nav.
-* All API calls use **relative** `/api/v1/...`.
-
-## 1) Router را درست راه‌اندازی کن
-
-* در `src/main.tsx` یا `src/App.tsx` از **`BrowserRouter`** استفاده کن (react-router-dom):
-
-```tsx
-import { BrowserRouter } from "react-router-dom";
-import App from "./App";
-
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
-);
-```
-
-* در `src/App.tsx` مسیرها را صریح تعریف کن:
-
-```tsx
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Products from "./pages/Products";
-import Blog from "./pages/Blog";
-import Dashboard from "./pages/Dashboard";
-
-export default function App() {
-  return (
-    <>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-    </>
-  );
-}
-```
-
-> اگر فقط سکشن داخلی روی هوم داری (مثل `#products`)، از **اسکرول نرم** استفاده کن (بخش 3) و route جدا نساز؛ ولی هرگز `href="#"` نگذار.
-
-## 2) همهٔ `<a href>`‌های داخلی را با `Link/NavLink` جایگزین کن
-
-* در `Header.tsx`, `Hero.tsx`, کارت‌ها و … هرجا لینک به صفحات داخلی داری:
-
-```tsx
-import { Link, NavLink } from "react-router-dom";
-
-// قدیم (اشتباه برای SPA):
-// <a href="/products">محصولات</a>  یا  <a href="#">مشاهده...</a>
-
-// جدید (درست):
-<NavLink to="/products" className="...">محصولات</NavLink>
-<Link to="/blog" className="...">از وبلاگ بخوانید</Link>
-<Link to="/" className="...">لوگو</Link>
-```
-
-* برای CTA هیرو که به محصولات می‌رفت:
-
-```tsx
-<Link to="/products" className="btn-primary">مشاهده محصولات</Link>
-```
-
-* هر **لینک بدون مقصد** (`href="#"`) را به **دکمه** تبدیل کن:
-
-```tsx
-<button type="button" onClick={...} className="...">…</button>
-```
-
-## 3) اگر فقط می‌خواهی به سکشن در همان صفحه بروی
-
-* به‌جای `href="#products"` از اسکرول نرم استفاده کن (بدون تغییر URL):
-
-```tsx
-function scrollToId(id: string) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
-}
-
-// نمونه:
-<button type="button" onClick={() => scrollToId("products")} className="...">
-  رفتن به محصولات
-</button>
-```
-
-> اگر می‌خواهی URL هم هَش بگیرد، می‌توانی از کتابخانه‌ی `react-router-hash-link` استفاده کنی، ولی ضروری نیست.
-
-## 4) فرم‌ها: از رفرش جلوگیری کن
-
-* هر فرم (ورود/ثبت‌نام/جستجو) باید `onSubmit={e => { e.preventDefault(); ... }}` داشته باشد:
-
-```tsx
-<form onSubmit={(e) => { e.preventDefault(); doLogin(); }}>
-  ...
-  <button type="submit">ورود</button>
-</form>
-```
-
-* دکمه‌هایی که فرم نیستند: `type="button"` بگذار تا submit اتفاقی رخ ندهد.
-
-## 5) دکمه‌های هدر (منوی کاربر/سبد) نباید مسیر را عوض کنند
-
-* دکمهٔ سبد:
-
-```tsx
-<button type="button" onClick={openCart}>🛒 سبد خرید</button>
-```
-
-* منوی کاربر بعد از ورود:
-
-```tsx
-// "داشبورد من"
-const navigate = useNavigate();
-<button type="button" onClick={() => navigate("/dashboard")}>داشبورد من</button>
-
-// "خروج"
-<button type="button" onClick={logout}>خروج</button>
-```
-
-## 6) محافظ مسیر داشبورد (اختیاری ولی توصیه می‌شود)
-
-* اگر یوزر لاگین نیست، به جای redirect سروری، از نگهبان کلاینت‌ساید استفاده کن:
-
-```tsx
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-
-function RequireAuth() {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/" replace />;
-  return <Outlet />;
-}
-
-// سپس در Routes:
-<Route element={<RequireAuth />}>
-  <Route path="/dashboard" element={<Dashboard />} />
-</Route>
-```
-
-## 7) تست‌های پذیرش (Acceptance)
-
-* کلیک روی آیتم‌های منو در هدر:
-
-  * «خانه» → `/` رندر Home
-  * «محصولات» → `/products`
-  * «وبلاگ» → `/blog`
-* CTAهای هیرو و کارت‌ها:
-
-  * «مشاهده محصولات» دیگر صفحه را ریفرش نمی‌کند و به `/products` می‌رود.
-* دکمه‌های بدون مسیر (سبد، مودال‌ها، جستجو):
-
-  * هیچ‌کدام باعث رفرش یا رفتن به `/` نمی‌شوند.
-* فرم‌ها:
-
-  * Submit هیچ‌وقت صفحه را ریفرش نمی‌کند (در DevTools → Network نباید `GET /` ببینی).
-* رفرش مستقیم روی `/products` یا `/blog`:
-
-  * به خاطر FastAPI `StaticFiles(html=True)` باید صفحه درست لود شود (نه 404، نه برگشت به `/`).
-
-## 8) نکات پایانی
-
-* هر لینک داخلی **باید** `Link/NavLink` باشد؛ هر چیز دیگری (مثل `a href="#"` یا `/`) را حذف کن.
-* برای «scroll به سکشن»، فقط **دکمه + scrollIntoView** استفاده کن.
-* هر جای کد `event.preventDefault()` فراموش شده، اضافه کن.
-* اگر جایی هنوز همه‌چیز به `/` رفت، DevTools → Network را باز کن: کدام ریکوئست `GET /` ایجاد شد؟ همان کامپوننت را اصلاح کن.
-
----
-
-با همین اصلاحات، «همه دکمه‌ها می‌رن صفحه اصلی» از بین می‌ره چون دیگه هیچ کلیک داخلی‌ای صفحه را **navigate سروری** نمی‌کند؛ همه چیز درون **React Router** و **event handlers** کنترل می‌شود.

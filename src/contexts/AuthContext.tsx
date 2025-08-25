@@ -7,6 +7,7 @@ export interface User {
   last_name: string;
   email: string;
   username: string;
+  role?: string;
 }
 
 export interface LoginRequest {
@@ -65,8 +66,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUser(userData);
           setIsLoading(false);
         })
-        .catch(() => {
+        .catch((error) => {
           // Token might be invalid, clear it
+          console.log('Token validation failed (expected if not logged in):', error.status);
           localStorage.removeItem('auth_token');
           setToken(null);
           apiClient.clearToken();
@@ -97,13 +99,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (data: RegisterRequest) => {
     try {
       const response = await apiClient.register(data);
-      setToken(response.access_token);
       
-      // Get user data after registration
-      const userData = await apiClient.getCurrentUser();
-      setUser(userData);
-      setIsAuthOpen(false);
+      // Only proceed if registration was successful
+      if (response.access_token) {
+        setToken(response.access_token);
+        apiClient.setToken(response.access_token);
+        
+        try {
+          // Get user data after successful registration
+          const userData = await apiClient.getCurrentUser();
+          setUser(userData);
+          setIsAuthOpen(false);
+        } catch (userError) {
+          // If getting user data fails, clear the token but don't fail registration
+          console.warn('Registration successful but failed to get user data:', userError);
+          setToken(response.access_token);
+          setIsAuthOpen(false);
+        }
+      }
     } catch (error) {
+      // Don't try to get user data if registration failed
       throw error;
     }
   };

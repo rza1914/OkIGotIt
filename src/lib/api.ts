@@ -10,7 +10,7 @@ export interface Banner {
   currency: string;
   active: boolean;
   position: number;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface Product {
@@ -50,12 +50,39 @@ export interface User {
   last_name: string;
   email: string;
   username: string;
+  role?: string;
 }
 
 let cfg = { API_BASE: '/api/v1' };
 export function setRuntimeCfg(c: { API_BASE: string }) { cfg = c; }
 
+export interface ApiError extends Error {
+  status?: number;
+  statusText?: string;
+  isHtmlResponse?: boolean;
+  details?: string | object;
+}
+
+export interface ValidationError {
+  type: string;
+  loc: string[];
+  msg: string;
+  input: any;
+}
+
+export interface ErrorResponse {
+  detail: string | ValidationError[];
+}
+
 type FetchOpts = RequestInit & { auth?: boolean };
+
+// Utility to check if response contains HTML
+function isHtmlResponse(contentType: string | null, body: string): boolean {
+  if (contentType && contentType.includes('text/html')) return true;
+  return body.trim().toLowerCase().startsWith('<!doctype html') || body.trim().toLowerCase().startsWith('<html');
+}
+
+// Enhanced API fetch with proper error handling
 export async function api<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const url = `${cfg.API_BASE}${path}`;
   const headers: Record<string,string> = { 'Content-Type': 'application/json' };
@@ -63,20 +90,67 @@ export async function api<T>(path: string, opts: FetchOpts = {}): Promise<T> {
     const t = localStorage.getItem('auth_token');
     if (t) headers.Authorization = `Bearer ${t}`;
   }
-  const res = await fetch(url, { ...opts, headers: { ...headers, ...(opts.headers||{}) } });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json() as Promise<T>;
+  
+  try {
+    const res = await fetch(url, { ...opts, headers: { ...headers, ...(opts.headers||{}) } });
+    
+    // Get response text to check content
+    const text = await res.text();
+    const contentType = res.headers.get('content-type');
+    
+    // Check if we received HTML instead of JSON
+    if (isHtmlResponse(contentType, text)) {
+      const error = new Error(`API returned HTML instead of JSON. This usually means the API endpoint is not available or there's a routing issue.`) as ApiError;
+      error.status = res.status;
+      error.statusText = res.statusText;
+      error.isHtmlResponse = true;
+      throw error;
+    }
+    
+    if (!res.ok) {
+      // Try to parse error response as JSON
+      let errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+      try {
+        const errorData = JSON.parse(text);
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        }
+      } catch {
+        // If not valid JSON, use the text as error message
+        errorMessage = text || errorMessage;
+      }
+      
+      const error = new Error(errorMessage) as ApiError;
+      error.status = res.status;
+      error.statusText = res.statusText;
+      throw error;
+    }
+    
+    // Parse JSON response
+    try {
+      return JSON.parse(text) as T;
+    } catch (parseError) {
+      const error = new Error('Invalid JSON response from server') as ApiError;
+      error.status = res.status;
+      error.statusText = res.statusText;
+      throw error;
+    }
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      // Network error
+      const apiError = new Error('Network error: Unable to connect to API server. Please check if the server is running.') as ApiError;
+      throw apiError;
+    }
+    throw error;
+  }
 }
 
 class ApiClient {
-  private baseUrl = '';
+  private baseUrl = '/api/v1'; // Use relative path for proxy
   private token: string | null = null;
 
   async init() {
-    if (!this.baseUrl) {
-      const config = await loadRuntimeConfig();
-      this.baseUrl = config.API_BASE;
-    }
+    // No need to load config, using proxy
   }
 
   setToken(token: string) {
@@ -116,17 +190,93 @@ class ApiClient {
       },
     };
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, config);
-    
-    if (!response.ok) {
-      if (response.status === 401) {
-        this.clearToken();
-        throw new Error('Authentication required');
-      }
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Debug logging for development
+    if (process.env.NODE_ENV === 'development' && (endpoint.includes('register') || endpoint.includes('auth'))) {
+      console.log('🔧 Auth API Request:', {
+        url: `${this.baseUrl}${endpoint}`,
+        method: config.method || 'GET'
+      });
     }
 
-    return response.json();
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, config);
+      
+      // Get response text to check content
+      const text = await response.text();
+      const contentType = response.headers.get('content-type');
+      
+      // Check if we received HTML instead of JSON
+      if (isHtmlResponse(contentType, text)) {
+        const error = new Error(`API endpoint ${endpoint} returned HTML instead of JSON. This usually means the endpoint is not available.`) as ApiError;
+        error.status = response.status;
+        error.statusText = response.statusText;
+        error.isHtmlResponse = true;
+        throw error;
+      }
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.clearToken();
+          const error = new Error('Authentication required') as ApiError;
+          error.status = 401;
+          error.statusText = 'Unauthorized';
+          throw error;
+        }
+        
+        // Try to parse error response as JSON
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        let errorData: ErrorResponse | null = null;
+        
+        try {
+          errorData = JSON.parse(text);
+          if (errorData?.detail) {
+            if (typeof errorData.detail === 'string') {
+              errorMessage = errorData.detail;
+            } else if (Array.isArray(errorData.detail)) {
+              // Handle validation errors (422)
+              const validationErrors = errorData.detail.map((err: ValidationError) => 
+                `${err.loc.join('.')}: ${err.msg}`
+              ).join(', ');
+              errorMessage = `Validation errors: ${validationErrors}`;
+            }
+          }
+        } catch {
+          // If not valid JSON, use the text as error message
+          errorMessage = text || errorMessage;
+        }
+        
+        // Debug logging for development
+        if (process.env.NODE_ENV === 'development' && (endpoint.includes('register') || endpoint.includes('auth'))) {
+          console.log('🔧 Auth API Error:', {
+            status: response.status,
+            error: errorMessage
+          });
+        }
+        
+        const error = new Error(errorMessage) as ApiError;
+        error.status = response.status;
+        error.statusText = response.statusText;
+        error.details = errorData;
+        throw error;
+      }
+      
+      // Parse JSON response
+      try {
+        return JSON.parse(text) as T;
+      } catch (parseError) {
+        const error = new Error(`Invalid JSON response from ${endpoint}`) as ApiError;
+        error.status = response.status;
+        error.statusText = response.statusText;
+        throw error;
+      }
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        // Network error
+        const apiError = new Error(`Network error: Unable to connect to API server at ${this.baseUrl}${endpoint}`) as ApiError;
+        throw apiError;
+      }
+      throw error;
+    }
   }
 
   // Auth endpoints

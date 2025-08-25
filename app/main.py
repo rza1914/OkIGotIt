@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from app.routers import auth
+from app.routers import auth, admin
 from app.database import engine
 from app.models import Base
 
@@ -22,6 +22,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 
 @app.get("/api/v1/health")
 def health():
@@ -116,18 +117,19 @@ def get_products():
         }
     ]
 
-# Custom SPA handler for client-side routing
+# Custom SPA handler for client-side routing  
 @app.exception_handler(404)
 async def spa_handler(request: Request, exc):
-    # If path starts with /api, return proper 404
+    from fastapi import HTTPException
+    # If path starts with /api, return proper JSON 404
     if request.url.path.startswith("/api"):
-        return {"detail": "Not Found"}
+        raise HTTPException(status_code=404, detail="Not Found")
     
     # For all other paths, serve index.html for SPA routing
     if os.path.exists("dist/index.html"):
         return FileResponse("dist/index.html")
     
-    return {"detail": "Not Found"}
+    raise HTTPException(status_code=404, detail="Not Found")
 
 # Serve SPA at root - MUST BE LAST after all API routes
 if os.path.isdir("dist"):

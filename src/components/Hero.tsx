@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiClient, Banner } from '../lib/api';
+import { apiClient, Banner, ApiError } from '../lib/api';
 import { formatPrice } from '../lib/date';
 
 const Hero: React.FC = () => {
   const [heroBanner, setHeroBanner] = useState<Banner | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchHeroBanner = async () => {
@@ -13,8 +14,19 @@ const Hero: React.FC = () => {
         const banners = await apiClient.getBanners();
         const hero = banners.find(b => b.key === 'hero' && b.active);
         setHeroBanner(hero || null);
+        setError(null);
       } catch (error) {
         console.error('Failed to fetch hero banner:', error);
+        const apiError = error as ApiError;
+        if (apiError.isHtmlResponse) {
+          setError('API server not responding correctly. Please check server status.');
+        } else if (apiError.status === 404) {
+          setError('Banner API endpoint not found.');
+        } else if (apiError.message.includes('Network error')) {
+          setError('Cannot connect to server. Please check your connection.');
+        } else {
+          setError('Failed to load banner. Please try again later.');
+        }
       } finally {
         setLoading(false);
       }
@@ -77,6 +89,19 @@ const Hero: React.FC = () => {
                     </p>
                   </div>
                 )}
+              </div>
+            ) : error ? (
+              <div className="card h-96 flex items-center justify-center bg-red-50 border-2 border-red-200">
+                <div className="text-center p-6">
+                  <p className="text-red-600 text-lg mb-2">خطا در بارگذاری بنر</p>
+                  <p className="text-red-500 text-sm">{error}</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    تلاش مجدد
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="card h-96 flex items-center justify-center bg-gray-100">
