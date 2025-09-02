@@ -1,0 +1,6 @@
+name,description,price,stock_quantity,category,image_url,sku,is_active
+"لپ تاپ ایسوس","لپ تاپ ایسوس مدل VivoBook با پردازنده Intel Core i5",15000000,5,"لپ تاپ","https://example.com/laptop1.jpg","ASUS001",true
+"گوشی سامسونگ","گوشی هوشمند سامسونگ گلکسی A54 با حافظه 128 گیگ",8500000,10,"موبایل","https://example.com/phone1.jpg","SAMSUNG001",true
+"هدفون بلوتوثی","هدفون بی‌سیم سونی با کیفیت صدای بالا",1200000,20,"لوازم جانبی","https://example.com/headphone1.jpg","SONY001",true
+"کیبورد گیمینگ","کیبورد مکانیکی ریزر برای بازی",2500000,8,"لوازم جانبی","https://example.com/keyboard1.jpg","RAZER001",true
+"مانیتور ال جی","مانیتور ال جی 24 اینچ Full HD",3800000,3,"مانیتور","https://example.com/monitor1.jpg","LG001",true

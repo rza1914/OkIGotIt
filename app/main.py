@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from app.routers import auth, admin
+from app.routers import auth, admin, orders, products, cart, product_import, bot_management, telegram_webhook
 from app.database import engine
 from app.models import Base
 
@@ -20,13 +20,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
-app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
-
+# Health check endpoint (specific route first)
 @app.get("/api/v1/health")
 def health():
-    return {"ok": True}
+    return {"status": "healthy", "service": "iShop API"}
+
+# Include routers (ordered from most specific to most general)
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
+app.include_router(product_import.router, tags=["product-import"])
+app.include_router(bot_management.router, tags=["bot-management"])
+app.include_router(telegram_webhook.router, tags=["telegram-webhook"])
+app.include_router(cart.router, tags=["cart"])
+app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])
+app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
 
 @app.get("/api/v1/banners")
 def get_banners():

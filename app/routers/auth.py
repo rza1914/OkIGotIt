@@ -69,7 +69,7 @@ async def register_user(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/user", response_model=User)
+@router.get("/users/me", response_model=User)
 async def read_users_me(current_user: UserModel = Depends(get_current_user)):
     return current_user
 

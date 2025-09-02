@@ -22,6 +22,7 @@ class User(Base):
     
     # Relationships
     orders = relationship("Order", back_populates="user")
+    cart_items = relationship("CartItem", back_populates="user")
     status_changes = relationship("OrderStatusHistory", back_populates="changed_by", foreign_keys="OrderStatusHistory.changed_by_user_id")
 
 
@@ -136,3 +137,51 @@ class OrderStatusHistory(Base):
     # Relationships
     order = relationship("Order", back_populates="status_history")
     changed_by = relationship("User")
+
+
+class CartItem(Base):
+    __tablename__ = "cart_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    quantity = Column(Integer, nullable=False, default=1)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="cart_items")
+    product = relationship("Product")
+
+
+class Category(Base):
+    __tablename__ = "categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False, unique=True)
+    slug = Column(String(255), nullable=False, unique=True)
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    products = relationship("Product", back_populates="category")
+
+
+class ImportLog(Base):
+    __tablename__ = "import_logs"
+    
+    id = Column(String(36), primary_key=True, index=True)  # UUID
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    filename = Column(String(255), nullable=False)
+    file_size = Column(Integer, nullable=False)
+    status = Column(String(20), nullable=False, default="processing")  # processing, completed, failed
+    success_count = Column(Integer, nullable=True, default=0)
+    error_count = Column(Integer, nullable=True, default=0)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Relationships
+    user = relationship("User")
