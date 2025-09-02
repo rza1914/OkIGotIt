@@ -82,15 +82,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (credentials: LoginRequest) => {
     try {
       const response = await apiClient.login(credentials);
+      
+      // Store token
+      localStorage.setItem('auth_token', response.access_token);
       setToken(response.access_token);
+      apiClient.setToken(response.access_token);
       
       // Get user data after login
       const userData = await apiClient.getCurrentUser();
+      
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       setIsAuthOpen(false);
       
-      console.log('[LOGIN OK] navigating to /dashboard');
-      // Note: We don't navigate here, let the user click dashboard manually
+      console.log('[LOGIN OK] User data stored:', userData);
     } catch (error) {
       throw error;
     }
@@ -102,17 +108,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       // Only proceed if registration was successful
       if (response.access_token) {
+        localStorage.setItem('auth_token', response.access_token);
         setToken(response.access_token);
         apiClient.setToken(response.access_token);
         
         try {
           // Get user data after successful registration
           const userData = await apiClient.getCurrentUser();
+          localStorage.setItem('user', JSON.stringify(userData));
           setUser(userData);
           setIsAuthOpen(false);
         } catch (userError) {
           // If getting user data fails, clear the token but don't fail registration
           console.warn('Registration successful but failed to get user data:', userError);
+          localStorage.setItem('auth_token', response.access_token);
           setToken(response.access_token);
           setIsAuthOpen(false);
         }
@@ -125,6 +134,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     apiClient.clearToken();

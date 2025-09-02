@@ -1,37 +1,27 @@
 import React from 'react';
-import { Navigate, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   BarChart3, Package, Users, Settings, ShoppingBag, 
-  FileText, LogOut, Menu, X, Bell, Search,
-  PenTool, Image
+  LogOut, Menu, X, Bell, Search,
+  PenTool, Image, Upload, Bot
 } from 'lucide-react';
-import { formatPersianDateTime, toPersianNumber } from '../utils/persian';
+import { formatPersianDateTime } from '../utils/persian';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const { user, isLoading, logout } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
-      </div>
-    );
-  }
-  
-  // Check if user is admin - redirect to login if not authenticated
-  if (!user || (user as any).role !== 'super_admin') {
-    return <Navigate to="/admin/login" replace />;
-  }
+  // No authentication check needed - AdminRoutes handles it
 
   const handleLogout = () => {
     logout();
+    // Redirect will be handled by App.tsx routing
   };
 
   const navigationItems = [
@@ -64,6 +54,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: '/admin/products', 
       icon: Package,
       description: 'افزودن، ویرایش، حذف محصولات'
+    },
+    { 
+      name: 'Import محصولات', 
+      href: '/admin/import', 
+      icon: Upload,
+      description: 'آپلود فایل‌های CSV/Excel'
+    },
+    { 
+      name: 'مدیریت ربات‌ها', 
+      href: '/admin/bots', 
+      icon: Bot,
+      description: 'کنترل ربات تلگرام و سیستم‌های خودکار'
     },
     { 
       name: 'مدیریت کاربران', 
@@ -104,7 +106,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                       پنل مدیریت آیشاپ
                     </h1>
                   </div>
-                  <p className="text-sm text-gray-600">خوش آمدید، {user.username}</p>
+                  <p className="text-sm text-gray-600">خوش آمدید، {user?.username}</p>
                 </div>
               )}
               <button
@@ -202,12 +204,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {/* User Info */}
                   <div className="flex items-center space-x-reverse space-x-3">
                     <div className="flex flex-col text-left">
-                      <span className="text-sm font-medium text-gray-900">{user.username}</span>
-                      <span className="text-xs text-gray-500">{user.email}</span>
+                      <span className="text-sm font-medium text-gray-900">{user?.username}</span>
+                      <span className="text-xs text-gray-500">{user?.email}</span>
                     </div>
                     <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-amber-500 rounded-full flex items-center justify-center shadow-sm">
                       <span className="text-sm font-semibold text-white">
-                        {user.username?.charAt(0).toUpperCase()}
+                        {user?.username?.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   </div>

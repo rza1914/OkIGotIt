@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
+import Checkout from "./pages/Checkout";
 import Blog from "./pages/Blog";
 import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
@@ -9,7 +11,15 @@ import NotFound from "./pages/NotFound";
 import RequireAuth from './routes/RequireAuth';
 import AdminLogin from "./admin/AdminLogin";
 import AdminDashboard from "./admin/AdminDashboard";
-import BlogManagement from "./admin/BlogManagement";
+import BlogManagement from "./pages/admin/BlogManagement";
+import OrderManagement from "./pages/admin/OrderManagement";
+import UserManagement from "./pages/admin/UserManagement";
+import Settings from "./pages/admin/Settings";
+import ProductManagement from "./pages/admin/ProductManagement";
+import ProductImport from "./pages/admin/ProductImport";
+import BotManagement from "./pages/admin/BotManagement";
+import { useAuth } from './contexts/AuthContext';
+import { AdminLayout } from './admin/AdminLayout';
 
 function App() {
   return (
@@ -18,8 +28,10 @@ function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="products" element={<Products />} />
+        <Route path="products/:id" element={<ProductDetail />} />
         <Route path="blog" element={<Blog />} />
         <Route element={<RequireAuth />}>
+          <Route path="checkout" element={<Checkout />} />
           <Route path="dashboard" element={<Dashboard />} />
         </Route>
         <Route path="*" element={<NotFound />} />
@@ -33,19 +45,32 @@ function App() {
 }
 
 // Admin routes component with protected routes
-const AdminRoutes = () => (
-  <Routes>
-    <Route path="dashboard" element={<AdminDashboard />} />
-    <Route path="banners" element={<Admin />} />
-    <Route path="blog" element={<BlogManagement />} />
-    <Route path="orders" element={<ComingSoon title="Order Management" />} />
-    <Route path="products" element={<ComingSoon title="Product Management" />} />
-    <Route path="users" element={<ComingSoon title="User Management" />} />
-    <Route path="settings" element={<ComingSoon title="Settings" />} />
-    {/* Redirect /admin to /admin/dashboard */}
-    <Route index element={<AdminDashboard />} />
-  </Routes>
-);
+const AdminRoutes = () => {
+  const { user } = useAuth();
+  
+  // Redirect to admin login if not authenticated or not admin
+  if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+    return <AdminLogin />;
+  }
+  
+  return (
+    <AdminLayout>
+      <Routes>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="banners" element={<Admin />} />
+        <Route path="blog" element={<BlogManagement />} />
+        <Route path="orders" element={<OrderManagement />} />
+        <Route path="products" element={<ProductManagement />} />
+        <Route path="import" element={<ProductImport />} />
+        <Route path="bots" element={<BotManagement />} />
+        <Route path="users" element={<UserManagement />} />
+        <Route path="settings" element={<Settings />} />
+        {/* Redirect /admin to /admin/dashboard */}
+        <Route index element={<AdminDashboard />} />
+      </Routes>
+    </AdminLayout>
+  );
+};
 
 // Coming Soon component for placeholder pages
 const ComingSoon = ({ title }: { title: string }) => (

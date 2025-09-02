@@ -12,7 +12,8 @@ const persianDays = [
 ];
 
 // Convert English numbers to Persian
-export const toPersianNumber = (num: number | string): string => {
+export const toPersianNumber = (num: number | string | undefined): string => {
+  if (num === undefined || num === null) return '';
   const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
   return num.toString().replace(/\d/g, (digit) => persianNumbers[parseInt(digit)]);
 };
@@ -108,9 +109,19 @@ export const getPersianStatus = (status: string): string => {
 };
 
 // Relative time in Persian
-export const getRelativeTime = (date: Date): string => {
+export const getRelativeTime = (date: Date | string | null): string => {
+  if (!date) return 'نامعلوم';
+  
+  // تبدیل رشته به Date object
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  // بررسی معتبر بودن تاریخ
+  if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
+    return 'تاریخ نامعتبر';
+  }
+  
   const now = new Date();
-  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+  const diffInMinutes = Math.floor((now.getTime() - dateObj.getTime()) / (1000 * 60));
   
   if (diffInMinutes < 1) {
     return 'همین الان';
@@ -126,7 +137,7 @@ export const getRelativeTime = (date: Date): string => {
     } else if (days < 7) {
       return `${toPersianNumber(days)} روز پیش`;
     } else {
-      return formatPersianDate(date);
+      return formatPersianDate(dateObj);
     }
   }
 };

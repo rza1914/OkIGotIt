@@ -16,12 +16,12 @@ const AdminLogin: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Redirect if already authenticated admin
-  if (user && user.role === 'super_admin') {
+  if (user && (user.role === 'admin' || user.role === 'super_admin')) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
   // Redirect non-admin users
-  if (user && user.role !== 'super_admin') {
+  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
     return <Navigate to="/" replace />;
   }
 
@@ -38,7 +38,7 @@ const AdminLogin: React.FC = () => {
       
       // Check if user is admin before redirecting
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      if (currentUser.role === 'super_admin') {
+      if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
         navigate('/admin/dashboard');
       } else {
         setError('دسترسی مجاز نیست. نیاز به اختیارات مدیریت.');

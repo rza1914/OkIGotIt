@@ -309,7 +309,7 @@ class ApiClient {
   }
 
   async getCurrentUser(): Promise<User> {
-    return this.request('/auth/user');
+    return this.request('/auth/users/me');
   }
 
   // Banners
