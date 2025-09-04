@@ -53,7 +53,7 @@ const Checkout: React.FC = () => {
           return;
         }
 
-        const response = await fetch('http://localhost:8000/api/v1/cart', {
+        const response = await fetch('/api/v1/cart', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -119,7 +119,7 @@ const Checkout: React.FC = () => {
         customer_notes: form.customer_notes
       };
 
-      const response = await fetch('http://localhost:8000/api/v1/orders/', {
+      const response = await fetch('/api/v1/orders/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ const Checkout: React.FC = () => {
       const order = await response.json();
       
       // Clear cart after successful order
-      await fetch('http://localhost:8000/api/v1/cart/clear', {
+      await fetch('/api/v1/cart/clear', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

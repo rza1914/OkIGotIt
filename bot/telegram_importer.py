@@ -23,7 +23,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 MAIN_CHANNEL_ID = int(os.getenv("MAIN_CHANNEL_ID", "0"))
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 IMPORTER_TOKEN = os.getenv("IMPORTER_TOKEN", "default_importer_token")
-API_BASE = os.getenv("API_BASE", "http://127.0.0.1:8000/api/v1")
+API_BASE = os.getenv("API_BASE", "/api/v1")
 
 class PersianMessageParser:
     """Parse Persian messages in different formats to extract product information"""

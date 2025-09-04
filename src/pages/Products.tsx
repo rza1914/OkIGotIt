@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Star } from 'lucide-react';
+import { apiClient, Product } from '../lib/api';
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  category: string;
-  price: number;
-  currency: string;
-  image_url: string;
-  slug: string;
-  stock: number;
-  is_active: boolean;
-}
+// Using Product interface from API client
 
 const Products: React.FC = () => {
   const navigate = useNavigate();
@@ -24,11 +14,7 @@ const Products: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/v1/products');
-        if (!response.ok) {
-          throw new Error('خطا در بارگذاری محصولات');
-        }
-        const data = await response.json();
+        const data = await apiClient.getProducts();
         setProducts(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'خطا در بارگذاری محصولات');

@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, ArrowRight, Star, Truck, Shield, Heart } from 'lucide-react';
+import { apiClient, Product } from '../lib/api';
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  category: string;
-  price: number;
-  currency: string;
-  image_url: string;
-  slug: string;
-  stock: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+// Using Product interface from API client
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,11 +17,8 @@ const ProductDetail: React.FC = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/products/${id}`);
-        if (!response.ok) {
-          throw new Error('محصول یافت نشد');
-        }
-        const data = await response.json();
+        if (!id) throw new Error('شناسه محصول موجود نیست');
+        const data = await apiClient.getProduct(parseInt(id));
         setProduct(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'خطا در بارگذاری محصول');
@@ -52,14 +37,15 @@ const ProductDetail: React.FC = () => {
     
     setAddingToCart(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = apiClient.getToken();
       if (!token) {
         alert('برای افزودن به سبد خرید باید وارد شوید');
         navigate('/login');
         return;
       }
 
-      const response = await fetch('http://localhost:8000/api/v1/cart/add', {
+      // Use relative URL for API proxy
+      const response = await fetch('/api/v1/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
