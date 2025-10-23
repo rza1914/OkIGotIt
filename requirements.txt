@@ -44,6 +44,7 @@ python-dotenv==1.0.0
 # Validation and Data Processing
 email-validator==2.2.0
 phonenumbers==8.13.25
+pandas==2.1.3
 
 # Image Processing (Optional)
 Pillow==10.1.0
