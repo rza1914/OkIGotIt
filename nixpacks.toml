@@ -1,5 +1,6 @@
-[phases.setup]
-providers = ["python"]
+@"
+[providers.python]
+version = "3.11"
 
 [phases.install]
 cmds = ["pip install -r requirements.txt"]
@@ -8,11 +9,8 @@ cmds = ["pip install -r requirements.txt"]
 cmds = []
 
 [start]
-cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+cmd = "uvicorn app.main:app --host 0.0.0.0 --port `$PORT"
 
 [variables]
-PYTHON_VERSION = "3.11"
 NIXPACKS_NO_MUSL = "1"
-
-[providers.python]
-version = "3.11"
+"@ | Out-File -FilePath nixpacks.toml -Encoding utf8
