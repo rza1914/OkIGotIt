@@ -4,13 +4,13 @@
 
 ### Copy Script to Server
 ```bash
-scp production-deploy.sh root@193.163.201.112:/usr/local/bin/
-ssh root@193.163.201.112 "chmod +x /usr/local/bin/production-deploy.sh"
+scp production-deploy.sh root@YOUR_SERVER_IP:/usr/local/bin/
+ssh root@YOUR_SERVER_IP "chmod +x /usr/local/bin/production-deploy.sh"
 ```
 
 ### Run Deployment
 ```bash
-ssh root@193.163.201.112
+ssh root@YOUR_SERVER_IP
 /usr/local/bin/production-deploy.sh
 ```
 
@@ -181,7 +181,7 @@ export DATABASE_URL="sqlite:///./ishop.db"  # or PostgreSQL URL
 
 # Security settings
 export SECRET_KEY="your-secret-key"
-export ALLOWED_HOSTS="your-domain.com,193.163.201.112"
+export ALLOWED_HOSTS="your-domain.com,YOUR_SERVER_IP"
 ```
 
 ### Service Configuration
