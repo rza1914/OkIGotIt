@@ -67,9 +67,6 @@ gunicorn==21.2.0
 # Monitoring and Logging
 structlog==23.2.0
 
-# Persian Text Processing
-hazm==0.7.0  # Persian text processing
-
 # Payment Gateway SDKs (Iranian)
 # zarinpal-python==1.0.3  # Unofficial
 # idpay-python==1.0.1     # Unofficial
