@@ -1,8 +1,9 @@
 import os
+from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from app.routers import auth, admin, orders, products, cart, product_import, bot_management, telegram_webhook
 from app.database import engine
 from app.models import Base
@@ -10,20 +11,40 @@ from app.models import Base
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="iShop API",
+    description="iShop E-commerce Platform API",
+    version="1.0.0"
+)
 
 # CORS middleware first
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
-    allow_methods=["*"], 
+    allow_origins=["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Root endpoint for production
+@app.get("/")
+async def root():
+    return {
+        "status": "ok",
+        "message": "iShop API is running",
+        "docs_url": "/docs",
+        "api_prefix": "/api/v1",
+        "version": "1.0.0",
+        "environment": os.getenv("ENVIRONMENT", "development")
+    }
 
 # Health check endpoint (specific route first)
 @app.get("/api/v1/health")
 def health():
-    return {"status": "healthy", "service": "iShop API"}
+    return {
+        "status": "healthy",
+        "service": "iShop API",
+        "timestamp": datetime.now().isoformat()
+    }
 
 # Include routers (ordered from most specific to most general)
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
@@ -124,20 +145,39 @@ def get_products():
         }
     ]
 
-# Custom SPA handler for client-side routing  
+# Custom SPA handler for client-side routing (only in development)
 @app.exception_handler(404)
 async def spa_handler(request: Request, exc):
     from fastapi import HTTPException
+
+    # In production, return clean JSON 404 (Frontend is hosted separately on Vercel)
+    if os.getenv("ENVIRONMENT") == "production":
+        return JSONResponse(
+            status_code=404,
+            content={
+                "detail": "Endpoint not found",
+                "message": "API is running. Check /docs for available endpoints.",
+                "path": request.url.path
+            }
+        )
+
     # If path starts with /api, return proper JSON 404
     if request.url.path.startswith("/api"):
         raise HTTPException(status_code=404, detail="Not Found")
-    
-    # For all other paths, serve index.html for SPA routing
+
+    # For all other paths in development, try to serve index.html for SPA routing
     if os.path.exists("dist/index.html"):
         return FileResponse("dist/index.html")
-    
-    raise HTTPException(status_code=404, detail="Not Found")
 
-# Serve SPA at root - MUST BE LAST after all API routes
-if os.path.isdir("dist"):
+    # Fallback to JSON 404
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": "Not Found",
+            "message": "Frontend dist folder not found. Run 'npm run build' to create it."
+        }
+    )
+
+# Serve SPA at root - MUST BE LAST after all API routes (only in development)
+if os.path.isdir("dist") and os.getenv("ENVIRONMENT") != "production":
     app.mount("/", StaticFiles(directory="dist", html=True), name="spa")
