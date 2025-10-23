@@ -22,7 +22,6 @@ itsdangerous==2.1.2
 # Security and Rate Limiting
 slowapi==0.1.9  # Rate limiting for FastAPI
 secure==0.3.0   # Security headers middleware
-python-csrf==1.0.1  # CSRF protection
 
 # CORS and Middleware
 fastapi-cors==0.0.6
