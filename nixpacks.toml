@@ -1,4 +1,3 @@
-"
 [providers.python]
 version = "3.11"
 
@@ -9,8 +8,7 @@ cmds = ["pip install -r requirements.txt"]
 cmds = []
 
 [start]
-cmd = "uvicorn app.main:app --host 0.0.0.0 --port `$PORT"
+cmd = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 
 [variables]
 NIXPACKS_NO_MUSL = "1"
-"@ | Out-File -FilePath nixpacks.toml -Encoding utf8
