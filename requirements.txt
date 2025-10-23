@@ -23,11 +23,7 @@ itsdangerous==2.1.2
 slowapi==0.1.9  # Rate limiting for FastAPI
 secure==0.3.0   # Security headers middleware
 
-# CORS and Middleware
-fastapi-cors==0.0.6
-
 # File Handling
-python-multipart==0.0.6
 aiofiles==23.2.0
 
 # Date and Time (Persian/Jalali Support)
@@ -46,7 +42,7 @@ jinja2==3.1.2
 python-dotenv==1.0.0
 
 # Validation and Data Processing
-email-validator==2.1.0
+email-validator==2.2.0
 phonenumbers==8.13.25
 
 # Image Processing (Optional)
@@ -59,7 +55,6 @@ python-redis-lock==4.0.0
 # Development and Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1
-httpx==0.25.2  # For testing
 
 # Production WSGI Server
 gunicorn==21.2.0
@@ -71,9 +66,6 @@ gunicorn==21.2.0
 
 # Monitoring and Logging
 structlog==23.2.0
-
-# API Documentation
-fastapi-users==12.1.2  # Optional for advanced user management
 
 # Persian Text Processing
 hazm==0.7.0  # Persian text processing
