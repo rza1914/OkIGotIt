@@ -17,7 +17,7 @@ interface BlogPost {
   content: string;
   summary: string;
   slug: string;
-  status: 'published' | 'draft' | 'archived';
+  status: 'published' | 'draft' | 'scheduled' | 'archived';
   featured_image: string;
   author: string;
   author_id: number;
@@ -236,7 +236,7 @@ const BlogManagement: React.FC = () => {
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     const aValue = a[sortBy as keyof BlogPost];
     const bValue = b[sortBy as keyof BlogPost];
-    const compareResult = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    const compareResult = (aValue ?? '') < (bValue ?? '') ? -1 : (aValue ?? '') > (bValue ?? '') ? 1 : 0;
     return sortOrder === 'asc' ? compareResult : -compareResult;
   });
 

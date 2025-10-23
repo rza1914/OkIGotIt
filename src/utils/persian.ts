@@ -15,7 +15,8 @@ const persianDays = [
 export const toPersianNumber = (num: number | string | undefined): string => {
   if (num === undefined || num === null) return '';
   const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  return num.toString().replace(/\d/g, (digit) => persianNumbers[parseInt(digit)]);
+  const numStr = num.toString();
+  return numStr.replace(/\d/g, (digit) => persianNumbers[parseInt(digit)]);
 };
 
 // Convert Persian numbers to English

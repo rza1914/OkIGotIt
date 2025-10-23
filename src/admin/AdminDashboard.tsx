@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BarChart3, Package, Users, ShoppingBag, TrendingUp, DollarSign, 
-  Calendar, Clock, AlertTriangle, CheckCircle 
+import {
+  Package, Users, ShoppingBag, TrendingUp, DollarSign,
+  Clock, AlertTriangle
 } from 'lucide-react';
 import { formatPersianCurrency, formatPersianNumber, getPersianStatus, getRelativeTime, formatPersianDateTime } from '../utils/persian';
 
@@ -25,7 +25,7 @@ interface DashboardStats {
 }
 
 const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState<DashboardStats>({
+  const [stats] = useState<DashboardStats>({
     totalOrders: 1234,
     totalProducts: 567,
     totalUsers: 8910,

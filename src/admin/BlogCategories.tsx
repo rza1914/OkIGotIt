@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, Edit2, Trash2, FolderOpen, BarChart3, 
-  Search, X, Save, Folder
+import {
+  Plus, Edit2, Trash2, FolderOpen, BarChart3,
+  Search, X, Save
 } from 'lucide-react';
 import { formatPersianNumber, getRelativeTime } from '../utils/persian';
 
@@ -22,7 +22,7 @@ interface CategoryFormData {
   name: string;
   slug: string;
   description: string;
-  parent_id?: number;
+  parent_id?: number | undefined;
   is_active: boolean;
 }
 

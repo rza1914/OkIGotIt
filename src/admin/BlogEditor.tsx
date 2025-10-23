@@ -13,7 +13,7 @@ interface BlogPost {
   content: string;
   summary: string;
   slug: string;
-  status: 'published' | 'draft' | 'scheduled';
+  status: 'published' | 'draft' | 'scheduled' | 'archived';
   featured_image: string;
   category: string;
   tags: string[];
@@ -178,7 +178,7 @@ const BlogEditor: React.FC<BlogEditorProps> = ({ post, onSave, onCancel }) => {
     }
   };
 
-  const handleSave = async (status: 'published' | 'draft' | 'scheduled' = formData.status) => {
+  const handleSave = async (status: 'published' | 'draft' | 'scheduled' | 'archived' = formData.status) => {
     setSaving(true);
     
     const postData = {

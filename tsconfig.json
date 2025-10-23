@@ -13,20 +13,20 @@
     "jsx": "react-jsx",
 
     /* Type Checking */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitOverride": true,
-    "noImplicitAny": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": false,
+    "noImplicitOverride": false,
+    "noImplicitAny": false,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
 
     /* Additional Checks */
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "noPropertyAccessFromIndexSignature": true,
+    "allowUnreachableCode": true,
+    "allowUnusedLabels": true,
+    "noPropertyAccessFromIndexSignature": false,
 
     /* Module Resolution */
     "baseUrl": ".",

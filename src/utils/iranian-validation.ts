@@ -61,11 +61,11 @@ export const validateNationalId = (nationalId: string): boolean => {
   // Calculate checksum
   let sum = 0;
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(cleanId[i]) * (10 - i);
+    sum += parseInt(cleanId[i] ?? '0') * (10 - i);
   }
-  
+
   const remainder = sum % 11;
-  const checkDigit = parseInt(cleanId[9]);
+  const checkDigit = parseInt(cleanId[9] ?? '0');
   
   if (remainder < 2) {
     return checkDigit === remainder;
@@ -246,11 +246,11 @@ export const validateIranianBusinessNumber = (businessNumber: string): boolean =
   // Simple checksum validation (simplified)
   let sum = 0;
   for (let i = 0; i < 10; i++) {
-    sum += parseInt(cleanNumber[i]) * (i + 2);
+    sum += parseInt(cleanNumber[i] ?? '0') * (i + 2);
   }
-  
+
   const remainder = sum % 11;
-  const checkDigit = parseInt(cleanNumber[10]);
+  const checkDigit = parseInt(cleanNumber[10] ?? '0');
   
   return remainder === checkDigit;
 };
@@ -263,7 +263,7 @@ export const calculatePersianAge = (persianBirthDate: string): number => {
   const currentYear = today.getFullYear();
   
   // Convert Persian year to approximate Gregorian (simplified)
-  const birthYear = parseInt(persianBirthDate.split('/')[0]) + 621;
+  const birthYear = parseInt(persianBirthDate.split('/')[0] ?? '0') + 621;
   
   return Math.max(0, currentYear - birthYear);
 };
